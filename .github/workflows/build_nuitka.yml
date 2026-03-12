@@ -1,6 +1,9 @@
-name: Build with PyInstaller (Manual only)
+name: Build with Nuitka and Release
 
 on:
+  push:
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 permissions:
@@ -25,36 +28,38 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install nuitka zstandard  # Nuitka + onefile support
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Prepare Config and Init Files
         run: |
           mkdir -p lumapi
           echo "{}" > lumapi/config.json
 
-      - name: Build GUI
+      - name: Build GUI with Nuitka
         run: |
-          pyinstaller --noconsole --onefile --clean \
-            --name LumAPI_GUI-windows-amd64.exe \
-            --hidden-import numpy \
-            --exclude-module matplotlib \
-            --add-data "lumapi;lumapi" \
+          nuitka --standalone --onefile --clean \
+            --output-filename=LumAPI_GUI-windows-amd64.exe \
+            --include-data-dir=./lumapi=lumapi \
+            --enable-plugin=tk-inter \
             LumAPI_GUI.py
 
-      - name: Build CLI
+      - name: Build CLI with Nuitka
         run: |
-          pyinstaller --onefile --clean \
-            --name LumAPI_CLI-windows-amd64.exe \
-            --hidden-import numpy \
-            --exclude-module matplotlib \
-            --add-data "lumapi;lumapi" \
+          nuitka --standalone --onefile --clean \
+            --output-filename=LumAPI_CLI-windows-amd64.exe \
+            --include-data-dir=./lumapi=lumapi \
             LumAPI_CLI.py
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows
-          path: dist/*.exe
+          path: '*.exe'
 
   build-linux:
     name: Build Linux (${{ matrix.arch }})
@@ -81,40 +86,74 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc python3-dev patchelf
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install nuitka zstandard
 
       - name: Prepare Config and Init Files
         run: |
           mkdir -p lumapi
           echo "{}" > lumapi/config.json
 
-      - name: Build GUI
+      - name: Build GUI with Nuitka
         run: |
-          pyinstaller --noconsole --onefile --clean \
-            --name LumAPI_GUI-linux-${{ matrix.arch }} \
-            --hidden-import numpy \
-            --exclude-module matplotlib \
-            --add-data "lumapi:lumapi" \
+          nuitka --standalone --onefile --clean \
+            --output-filename=LumAPI_GUI-linux-${{ matrix.arch }} \
+            --include-data-dir=./lumapi=lumapi \
+            --enable-plugin=tk-inter \
             LumAPI_GUI.py
 
-      - name: Build CLI
+      - name: Build CLI with Nuitka
         run: |
-          pyinstaller --onefile --clean \
-            --name LumAPI_CLI-linux-${{ matrix.arch }} \
-            --hidden-import numpy \
-            --exclude-module matplotlib \
-            --add-data "lumapi:lumapi" \
+          nuitka --standalone --onefile --clean \
+            --output-filename=LumAPI_CLI-linux-${{ matrix.arch }} \
+            --include-data-dir=./lumapi=lumapi \
             LumAPI_CLI.py
 
       - name: Package executables
         run: |
-          cd dist
-          tar -czvf ../LumAPI_GUI-linux-${{ matrix.arch }}.tar.gz LumAPI_GUI-linux-${{ matrix.arch }}
-          tar -czvf ../LumAPI_CLI-linux-${{ matrix.arch }}.tar.gz LumAPI_CLI-linux-${{ matrix.arch }}
+          tar -czvf LumAPI_GUI-linux-${{ matrix.arch }}.tar.gz LumAPI_GUI-linux-${{ matrix.arch }}
+          tar -czvf LumAPI_CLI-linux-${{ matrix.arch }}.tar.gz LumAPI_CLI-linux-${{ matrix.arch }}
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux-${{ matrix.arch }}
           path: '*.tar.gz'
+
+  release:
+    name: Create Release
+    needs: [build-windows, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-windows
+          path: ./assets
+
+      - name: Download Linux AMD64 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-linux-amd64
+          path: ./assets
+
+      - name: Download Linux ARM64 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-linux-arm64
+          path: ./assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
