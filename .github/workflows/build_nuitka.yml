@@ -42,7 +42,8 @@ jobs:
 
       - name: Build GUI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
+            --assume-yes-for-downloads \
             --output-filename=LumAPI_GUI-windows-amd64.exe \
             --include-data-dir=./lumapi=lumapi \
             --enable-plugin=tk-inter \
@@ -50,7 +51,8 @@ jobs:
 
       - name: Build CLI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
+            --assume-yes-for-downloads \
             --output-filename=LumAPI_CLI-windows-amd64.exe \
             --include-data-dir=./lumapi=lumapi \
             LumAPI_CLI.py
@@ -98,7 +100,7 @@ jobs:
 
       - name: Build GUI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
             --output-filename=LumAPI_GUI-linux-amd64 \
             --include-data-dir=./lumapi=lumapi \
             --enable-plugin=tk-inter \
@@ -106,7 +108,7 @@ jobs:
 
       - name: Build CLI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
             --output-filename=LumAPI_CLI-linux-amd64 \
             --include-data-dir=./lumapi=lumapi \
             LumAPI_CLI.py
@@ -159,7 +161,7 @@ jobs:
 
       - name: Build GUI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
             --output-filename=LumAPI_GUI-linux-arm64 \
             --include-data-dir=./lumapi=lumapi \
             --enable-plugin=tk-inter \
@@ -167,7 +169,7 @@ jobs:
 
       - name: Build CLI with Nuitka
         run: |
-          nuitka --standalone --onefile --clean \
+          python -m nuitka --standalone --onefile --clean \
             --output-filename=LumAPI_CLI-linux-arm64 \
             --include-data-dir=./lumapi=lumapi \
             LumAPI_CLI.py
