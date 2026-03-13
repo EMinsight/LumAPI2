@@ -45,7 +45,9 @@ jobs:
           python -m nuitka --standalone --onefile \
             --assume-yes-for-downloads \
             --output-filename=LumAPI_GUI-windows-amd64.exe \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             --enable-plugin=tk-inter \
             LumAPI_GUI.py
 
@@ -54,7 +56,9 @@ jobs:
           python -m nuitka --standalone --onefile \
             --assume-yes-for-downloads \
             --output-filename=LumAPI_CLI-windows-amd64.exe \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             LumAPI_CLI.py
 
       - name: Upload Windows Artifacts
@@ -102,7 +106,9 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --output-filename=LumAPI_GUI-linux-amd64 \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             --enable-plugin=tk-inter \
             LumAPI_GUI.py
 
@@ -110,7 +116,9 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --output-filename=LumAPI_CLI-linux-amd64 \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             LumAPI_CLI.py
 
       - name: Package executables
@@ -163,7 +171,9 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --output-filename=LumAPI_GUI-linux-arm64 \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             --enable-plugin=tk-inter \
             LumAPI_GUI.py
 
@@ -171,7 +181,9 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --output-filename=LumAPI_CLI-linux-arm64 \
-            --include-data-dir=./lumapi=lumapi \
+            --include-data-files=./lumapi/__init__.py=./lumapi/__init__.py \
+            --include-data-files=./lumapi/lumapi.py=./lumapi/lumapi.py \
+            --include-data-files=./lumapi/config.json=./lumapi/config.json \
             LumAPI_CLI.py
 
       - name: Package executables
