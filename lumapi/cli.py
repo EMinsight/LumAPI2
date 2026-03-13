@@ -6,7 +6,7 @@ import platform
 import sys
 
 # --- 路径处理逻辑 ---
-# 对于安装版，cli.py 位于 lumapi 包内部
+# 对于安装版，cli.py 位于 LumAPI 包内部
 LUMAPI_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(LUMAPI_DIR, "config.json")
 INIT_PATH = os.path.join(LUMAPI_DIR, "__init__.py")
@@ -14,7 +14,7 @@ INIT_PATH = os.path.join(LUMAPI_DIR, "__init__.py")
 # 确保 __init__.py 存在
 if not os.path.exists(INIT_PATH):
     try:
-        with open(INIT_PATH, 'w') as f: f.write("from lumapi.lumapi import *\n")
+        with open(INIT_PATH, 'w') as f: f.write("from LumAPI.lumapi import *\n")
     except: pass
 # ---------------------------
 
@@ -128,7 +128,7 @@ def load_config():
 
 def load_lumapi(lumerical_path, version):
     # 直接使用 validate_path 里的逻辑来测试
-    # 或者尝试从 lumapi 包导入
+    # 或者尝试从 LumAPI 包导入
     try:
         print(f"正在尝试加载 Lumerical API ({version})...")
         path, ver = validate_path(lumerical_path)

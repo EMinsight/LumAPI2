@@ -489,7 +489,7 @@ def RorySommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far
     return E_far, E_far_x, E_far_y, E_far_z
 
 
-class LumAPI:
+class lumapi:
     def __init__(self, lumerical_path='', version='', config_path=CONFIG_PATH):
         self.config_path = config_path
         
@@ -594,7 +594,7 @@ if __name__ == '__main__':
     S = 0.5*um
     material_base = 'Au (Gold) - CRC'
 
-    lumapi = LumAPI()
+    lumapi = lumapi()
     fdtd = lumapi.FDTD()
     fdtd.addrect(
         name="base",

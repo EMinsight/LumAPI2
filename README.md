@@ -24,14 +24,14 @@
 
 ## 🛠️ 集成模式
 
-配置完成后，本工具提供两种方式将 Lumerical API (`lumapi`) 接入您的开发环境。
+配置完成后，本工具提供两种方式将 Lumerical API (`LumAPI`) 接入您的开发环境。
 
 ### 方式一：全局集成（推荐）
-适用于希望在任意路径下直接调用 `lumapi` 的场景。
+适用于希望在任意路径下直接调用 `LumAPI` 的场景。
 1.  **选择解释器**：在配置工具中指定您日常使用的 Python 解释器路径（支持自动扫描 Conda/System Python）。
 2.  **一键注入**：点击 **“导出到 Python 解释器”**。
     * *机制*：工具会将库文件自动部署至该解释器的 `site-packages` 目录。
-    * *效果*：无需额外操作，直接在代码中使用 `import lumapi` 即可。
+    * *效果*：无需额外操作，直接在代码中使用 `import LumAPI` 即可。
 
 ### 方式二：项目级集成（便携模式）
 适用于临时测试或需随项目打包分发的场景。
@@ -52,7 +52,7 @@
 
 **代码示例：**
 ```python
-import lumapi.LumAPI as lumapi  # 根据实际导出结构调整导入路径
+import LumAPI.lumapi as lumapi  # 根据实际导出结构调整导入路径
 
 # 定义基础参数
 um = 1e-6
@@ -109,7 +109,7 @@ def Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba'):
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from lumapi import Kirchhoff
+from LumAPI import Kirchhoff
 
 # 1. 定义物理常数与网格
 um = 1e-6

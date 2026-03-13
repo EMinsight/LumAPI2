@@ -1,3 +1,3 @@
-from lumapi.lumapi import *
+from LumAPI.lumapi import *
 
 

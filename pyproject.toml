@@ -18,16 +18,16 @@ dependencies = [
 
 # 定义命令行入口，分别指向文件夹内部的新脚本
 [project.scripts]
-LumAPI = "lumapi.gui:main"
-LumAPI_CLI = "lumapi.cli:main"
+LumAPI = "LumAPI.gui:main"
+LumAPI_CLI = "LumAPI.cli:main"
 
 [tool.setuptools]
-# 明确指定只包含名为 lumapi 的文件夹
-packages = ["lumapi"]
+# 明确指定只包含名为 LumAPI 的文件夹
+packages = ["LumAPI"]
 
 [tool.setuptools.package-data]
 # 确保 config.json 被包含在内
-lumapi = ["*.json"]
+LumAPI = ["*.json"]
 
 # 排除根目录下的旧脚本
 [tool.setuptools.exclude-package-data]

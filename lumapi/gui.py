@@ -15,7 +15,7 @@ class LumericalGUI:
         self.root.title("Lumerical 接口配置工具 (PyPI版)")
         
         # --- 路径处理核心逻辑 ---
-        # 对于安装版，gui.py 位于 lumapi 包内部
+        # 对于安装版，gui.py 位于 LumAPI 包内部
         self.lumapi_dir = os.path.dirname(os.path.abspath(__file__))
         self.config_path = os.path.join(self.lumapi_dir, "config.json")
         self.init_file_path = os.path.join(self.lumapi_dir, "__init__.py")
@@ -24,7 +24,7 @@ class LumericalGUI:
         if not os.path.exists(self.init_file_path):
             try:
                 with open(self.init_file_path, 'w') as f:
-                    f.write("from lumapi.lumapi import *\n")
+                    f.write("from LumAPI.lumapi import *\n")
             except: pass
 
         self.create_widgets()
@@ -195,7 +195,7 @@ class LumericalGUI:
         try:
             # 重新加载模块以应用新配置 (如果lumapi本身有缓存)
             # 这里简单尝试验证路径
-            from lumapi.lumapi import validate_path
+            from LumAPI.lumapi import validate_path
             path = self.path_var.get()
             version = self.detect_version(path)
             

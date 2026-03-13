@@ -23,7 +23,7 @@ class LumericalGUI:
             self.base_dir = os.path.dirname(os.path.abspath(__file__))
             self.output_dir = self.base_dir
 
-        self.lumapi_dir = os.path.join(self.base_dir, "lumapi")
+        self.lumapi_dir = os.path.join(self.base_dir, "LumAPI")
         self.config_path = os.path.join(self.lumapi_dir, "config.json")
         self.init_file_path = os.path.join(self.lumapi_dir, "__init__.py")
         
@@ -35,7 +35,7 @@ class LumericalGUI:
         if not os.path.exists(self.init_file_path):
             try:
                 with open(self.init_file_path, 'w') as f:
-                    f.write("from lumapi.lumapi import *\n")
+                    f.write("from LumAPI.lumapi import *\n")
             except: pass
 
         self.create_widgets()
@@ -339,11 +339,11 @@ class LumericalGUI:
             messagebox.showerror("错误", f"无法获取库路径或路径不存在:\n{target_lib_path}")
             return
 
-        target_lumapi_dir = os.path.join(target_lib_path, "lumapi")
+        target_lumapi_dir = os.path.join(target_lib_path, "LumAPI")
         
         # 覆盖检查
         if os.path.exists(target_lumapi_dir):
-            if not messagebox.askyesno("覆盖警告", f"目录已存在:\n{target_lumapi_dir}\n\n是否覆盖其中的 lumapi 库文件？"):
+            if not messagebox.askyesno("覆盖警告", f"目录已存在:\n{target_lumapi_dir}\n\n是否覆盖其中的 LumAPI 库文件？"):
                 return
         else:
             os.makedirs(target_lumapi_dir, exist_ok=True)
@@ -360,9 +360,9 @@ class LumericalGUI:
                     if f_name == "config.json":
                         raise FileNotFoundError("config.json 未找到，请先生成配置")
                     if f_name == "__init__.py":
-                        with open(dst, 'w') as f: f.write("from lumapi.lumapi import *\n")
+                        with open(dst, 'w') as f: f.write("from LumAPI.lumapi import *\n")
 
-            messagebox.showinfo("安装成功", f"lumapi 库已成功安装到:\n{target_lumapi_dir}\n\n在该 Python 环境中可直接使用: import lumapi")
+            messagebox.showinfo("安装成功", f"LumAPI 库已成功安装到:\n{target_lumapi_dir}\n\n在该 Python 环境中可直接使用: import LumAPI")
         except Exception as e:
             messagebox.showerror("安装失败", str(e))
 

@@ -15,7 +15,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     OUTPUT_DIR = BASE_DIR
 
-LUMAPI_DIR = os.path.join(BASE_DIR, "lumapi")
+LUMAPI_DIR = os.path.join(BASE_DIR, "LumAPI")
 CONFIG_PATH = os.path.join(LUMAPI_DIR, "config.json")
 INIT_PATH = os.path.join(LUMAPI_DIR, "__init__.py")
 
@@ -25,7 +25,7 @@ if not getattr(sys, 'frozen', False) and not os.path.exists(LUMAPI_DIR):
 # 确保 __init__.py 存在
 if not os.path.exists(INIT_PATH):
     try:
-        with open(INIT_PATH, 'w') as f: f.write("from lumapi.lumapi import *\n")
+        with open(INIT_PATH, 'w') as f: f.write("from LumAPI.lumapi import *\n")
     except: pass
 # ---------------------------
 
@@ -197,7 +197,7 @@ def install_to_python_env():
         print("[错误] 无法获取 site-packages 路径")
         return
 
-    target_dir = os.path.join(lib_path, "lumapi")
+    target_dir = os.path.join(lib_path, "LumAPI")
     print(f"目标安装路径: {target_dir}")
     
     if os.path.exists(target_dir):
@@ -215,10 +215,10 @@ def install_to_python_env():
             if os.path.exists(src):
                 shutil.copy2(src, dst)
             elif f == "__init__.py":
-                 with open(dst, 'w') as f_obj: f_obj.write("from lumapi.lumapi import *\n")
+                 with open(dst, 'w') as f_obj: f_obj.write("from LumAPI.lumapi import *\n")
         
         print(f"\n[成功] 已安装到 {target_dir}")
-        print("您现在可以在该 Python 环境中使用 'import lumapi'")
+        print("您现在可以在该 Python 环境中使用 'import LumAPI'")
     except Exception as e:
         print(f"[错误] 安装失败: {e}")
 
