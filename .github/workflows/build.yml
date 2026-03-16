@@ -29,8 +29,8 @@ jobs:
 
       - name: Prepare Config and Init Files
         run: |
-          mkdir -p lumapi
-          echo "{}" > lumapi/config.json
+          mkdir -p LumAPI
+          echo "{}" > LumAPI/config.json
 
       - name: Build GUI
         run: |
@@ -38,7 +38,7 @@ jobs:
             --name LumAPI_GUI-windows-amd64.exe \
             --hidden-import numpy \
             --exclude-module matplotlib \
-            --add-data "lumapi;lumapi" \
+            --add-data "LumAPI;LumAPI" \
             LumAPI_GUI.py
 
       - name: Build CLI
@@ -47,7 +47,7 @@ jobs:
             --name LumAPI_CLI-windows-amd64.exe \
             --hidden-import numpy \
             --exclude-module matplotlib \
-            --add-data "lumapi;lumapi" \
+            --add-data "LumAPI;LumAPI" \
             LumAPI_CLI.py
 
       - name: Upload Windows Artifacts
@@ -86,8 +86,8 @@ jobs:
 
       - name: Prepare Config and Init Files
         run: |
-          mkdir -p lumapi
-          echo "{}" > lumapi/config.json
+          mkdir -p LumAPI
+          echo "{}" > LumAPI/config.json
 
       - name: Build GUI
         run: |
@@ -95,7 +95,7 @@ jobs:
             --name LumAPI_GUI-linux-${{ matrix.arch }} \
             --hidden-import numpy \
             --exclude-module matplotlib \
-            --add-data "lumapi:lumapi" \
+            --add-data "LumAPI:LumAPI" \
             LumAPI_GUI.py
 
       - name: Build CLI
@@ -104,7 +104,7 @@ jobs:
             --name LumAPI_CLI-linux-${{ matrix.arch }} \
             --hidden-import numpy \
             --exclude-module matplotlib \
-            --add-data "lumapi:lumapi" \
+            --add-data "LumAPI:LumAPI" \
             LumAPI_CLI.py
 
       - name: Package executables
