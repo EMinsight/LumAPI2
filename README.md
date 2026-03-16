@@ -11,6 +11,35 @@
 
 ## 🚀 快速开始
 
+## 📦 pip安装(推荐)
+
+### 1. 库文件下载
+通过运行以下命令安装`LumAPI`库
+```bash
+pip install LumAPI
+```
+### 2. 配置lumerical路径
+在安装完库后运行下面的命令即可打开lumerical路径配置页面
+图形界面配置：
+```bash
+LumAPI
+```
+命令行配置：
+```bash
+LumAPI_CLI
+```
+### 3. 使用
+通过下述代码即可调用 Lumerical API：
+```python
+from LumAPI import *
+
+filename = 'simulation.fsp'
+fdtd = lumapi().FDTD(filename)
+fdtd.close()
+```
+
+## 📦 打包程序安装
+
 ### 1. 获取程序
 请前往 [Releases 页面](releases) 下载适配您操作系统（Windows/Linux）及架构（AMD64/ARM64）的预编译程序。`LumAPI_GUI`为带图形界面版本的配置程序，`LumAPI_CLI`为无图形界面版本的命令行配置工具，二者选择其一即可。
 
