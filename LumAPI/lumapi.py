@@ -489,45 +489,68 @@ def RorySommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far
     return E_far, E_far_x, E_far_y, E_far_z
 
 
-class lumapi:
+class lumerical:
     def __init__(self, lumerical_path='', version='', config_path=CONFIG_PATH):
         self.config_path = config_path
-        
-        # 如果没有提供路径，尝试从配置文件加载
-        if not lumerical_path:
-            try:
-                with open(self.config_path, 'r') as f:
-                    config = json.load(f)
-                lumerical_path = config.get('lumerical_path')
-                version = config.get('version')
-                
-                if not lumerical_path:
-                    raise ValueError("配置文件中缺少lumerical_path字段")
-                    
-            except Exception as e:
-                raise ValueError(f"配置文件读取失败: {str(e)}")
-        
-        # 验证路径
-        self.lumapi = validate_path(lumerical_path, version)
-        
-        # 检测路径是否有效
-        if not self.lumapi:
-            raise ValueError(f"错误：Lumerical路径无效，请检查路径{lumerical_path}和版本{version}")
-        
+        self.lumapi = None
         self.lumerical_path = lumerical_path
         self.version = version
+        
+        # 尝试加载配置
+        self._load_config()
 
-    def FDTD(self, filename=None, key = None, hide = False, serverArgs = {}, remoteArgs = {}, **kwargs):
+    def _load_config(self):
+        """内部方法：尝试从参数或配置文件加载 lumapi"""
+        try:
+            path = self.lumerical_path
+            ver = self.version
+            
+            # 如果初始化时没给路径，尝试读配置
+            if not path:
+                if os.path.exists(self.config_path):
+                    with open(self.config_path, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                    path = config.get('lumerical_path')
+                    ver = config.get('version')
+            
+            if path:
+                self.lumapi = validate_path(path, ver)
+                self.lumerical_path = path
+                self.version = ver
+        except Exception:
+            self.lumapi = None
+
+    def _check_config_and_prompt(self):
+        """核心逻辑：检查配置状态，若无效则引导用户使用 LumAPI 命令"""
+        if self.lumapi is None:
+            print("\n" + "*" * 60)
+            print("【配置错误】未检测到有效的 Lumerical 环境。")
+            print("原因可能是：")
+            print("1. 尚未进行初始化配置。")
+            print("2. 配置文件 config.json 损坏或路径已失效。")
+            print("\n请在终端执行以下命令进行配置：")
+            print("    LumAPI")
+            print("或者使用命令行配置程序：")
+            print("    LumAPI_CLI")
+            print("*" * 60 + "\n")
+            # 退出程序或抛出异常，防止后续调用崩溃
+            sys.exit(1)
+
+    def FDTD(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
+        self._check_config_and_prompt()
         return FDTD(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
     
-    def MODE(self, filename=None, key = None, hide = False, serverArgs = {}, remoteArgs = {}, **kwargs):
+    def MODE(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
+        self._check_config_and_prompt()
         return MODE(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
     
-    def DEVICE(self, filename=None, key = None, hide = False, serverArgs = {}, remoteArgs = {}, **kwargs):
-        return MODE(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
+    def DEVICE(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
+        self._check_config_and_prompt()
+        return DEVICE(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
     
-    def INTERCONNECT(self, filename=None, key = None, hide = False, serverArgs = {}, remoteArgs = {}, **kwargs):
-        return MODE(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
+    def INTERCONNECT(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
+        self._check_config_and_prompt()
+        return INTERCONNECT(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
     
 class FDTD():
     def __init__(self, lumapi, filename=None, key = None, hide = False, serverArgs = {}, remoteArgs = {}, **kwargs):
@@ -586,7 +609,8 @@ class INTERCONNECT():
         将原本函数转发回去
         '''
         return getattr(self.interconnect, name)
-
+    
+lumapi = lumerical()
 
 if __name__ == '__main__':
     um = 1e-6

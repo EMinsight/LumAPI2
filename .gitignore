@@ -1,6 +1,7 @@
 # 更新日志
 记录日志.md
 .vscode/
+test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
