@@ -14,7 +14,7 @@ jobs:
   # JOB 1: Windows x64
   # ====================================================
   build-windows:
-    name: Build Windows (amd64)
+    name: Build Windows (x86_64)
     runs-on: windows-latest
     defaults:
       run:
@@ -44,7 +44,7 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --assume-yes-for-downloads \
-            --output-filename=LumAPI_GUI-windows-amd64.exe \
+            --output-filename=LumAPI_GUI-windows-x86_64.exe \
             --include-data-files=./LumAPI/__init__.py=./LumAPI/__init__.py \
             --include-data-files=./LumAPI/lumapi.py=./LumAPI/lumapi.py \
             --include-data-files=./LumAPI/config.json=./LumAPI/config.json \
@@ -55,7 +55,7 @@ jobs:
         run: |
           python -m nuitka --standalone --onefile \
             --assume-yes-for-downloads \
-            --output-filename=LumAPI_CLI-windows-amd64.exe \
+            --output-filename=LumAPI_CLI-windows-x86_64.exe \
             --include-data-files=./LumAPI/__init__.py=./LumAPI/__init__.py \
             --include-data-files=./LumAPI/lumapi.py=./LumAPI/lumapi.py \
             --include-data-files=./LumAPI/config.json=./LumAPI/config.json \
