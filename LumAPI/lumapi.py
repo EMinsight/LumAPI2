@@ -88,7 +88,7 @@ def create_cmap(color_list, cmap_name="custom_cmap"):
         - 十六进制色值 (str): 例如 '#000000', '#FF5733', '#FFFFFF'
         - RGB 浮点数元组 (范围 0.0-1.0): 例如 (0.0, 0.0, 0.0)
         - RGB 整数元组 (范围 0-255): 例如 (0, 0, 0)
-      例如：[(0, 0, 0), 'red', '#FFFFFF']
+      例如：[(0, 0, 0), (0.0, 0.0, 1.0), 'red', '#FFFFFF'] 黑色->蓝色->红色->白色
     cmap_name (str): 生成的 Colorbar 的名称，默认为 "custom_cmap"
     
     返回:
