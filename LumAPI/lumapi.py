@@ -78,31 +78,46 @@ def validate_path(lumerical_root: str, version: str = None) -> object:
         print(f"错误：路径验证失败 - {str(e)}")
         return None
 
-def create_cmap(color_type):
+def create_cmap(color_list, cmap_name="custom_cmap"):
     """
-    创建从黑色到指定颜色再到白色的渐变色映射
+    根据传入的颜色列表创建自定义的渐变色映射
     
     参数:
-    color_type (str): 颜色类型，可以是 'green', 'blue' 或 'red'
+    color_list (list): 颜色列表，按顺序定义渐变路径。列表元素支持：
+        - 颜色名称 (str): 例如 'black', 'red', 'white'
+        - 十六进制色值 (str): 例如 '#000000', '#FF5733', '#FFFFFF'
+        - RGB 浮点数元组 (范围 0.0-1.0): 例如 (0.0, 0.0, 0.0)
+        - RGB 整数元组 (范围 0-255): 例如 (0, 0, 0)
+    cmap_name (str): 生成的 Colorbar 的名称，默认为 "custom_cmap"
     
     返回:
     LinearSegmentedColormap: 对应的颜色映射对象
     """
+    import matplotlib.colors as mcolors
     from matplotlib.colors import LinearSegmentedColormap
-    # 定义颜色字典
-    colors = {
-        'green': [(0, 0, 0), (0, 0.5, 0), (1, 1, 1)],  # 黑色 -> 绿色 -> 白色
-        'blue': [(0, 0, 0), (0, 0, 0.5), (1, 1, 1)],   # 黑色 -> 蓝色 -> 白色
-        'red': [(0, 0, 0), (0.5, 0, 0), (1, 1, 1)]     # 黑色 -> 红色 -> 白色
-    }
     
-    if color_type not in colors:
-        raise ValueError("参数必须是 'green', 'blue' 或 'red'")
+    if not isinstance(color_list, list) or len(color_list) < 2:
+        raise ValueError("color_list 必须是一个包含至少两种颜色的列表")
+
+    processed_colors = []
     
-    # 创建颜色映射
+    for color in color_list:
+        # 如果是元组或列表格式的 RGB，检查是否需要从 0-255 归一化到 0-1
+        if isinstance(color, (tuple, list)):
+            if any(v > 1.0 for v in color):
+                color = tuple(v / 255.0 for v in color)
+                
+        # 尝试将颜色转换为 matplotlib 标准的 RGB 格式
+        try:
+            valid_color = mcolors.to_rgb(color)
+            processed_colors.append(valid_color)
+        except ValueError:
+            raise ValueError(f"无法识别的颜色输入: {color}。请检查格式是否正确。")
+
+    # 根据处理后的颜色列表创建颜色映射
     cmap = LinearSegmentedColormap.from_list(
-        f'black_{color_type}_white', 
-        colors[color_type], 
+        cmap_name, 
+        processed_colors, 
         N=256
     )
     
