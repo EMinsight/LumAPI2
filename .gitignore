@@ -2,6 +2,8 @@
 记录日志.md
 .vscode/
 test/
+test*
+config.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
