@@ -525,6 +525,150 @@ def RorySommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far
     E_total = np.sqrt(np.abs(E_far_x)**2 + np.abs(E_far_y)**2 + np.abs(E_far_z)**2)
     return E_total, E_far_x, E_far_y, E_far_z
 
+def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='fft'):
+    '''
+    矢量角谱法 (Vector Angular Spectrum) 3D 衍射传播
+    
+    参数:
+        lamb: 波长
+        x_near, y_near: 近场平面网格坐标 (一维数组)
+        E_near_x, E_near_y: 近场电场横向分量 (二维数组)
+        x_far, y_far, z_far: 远场坐标 (允许为单个数字或一维数组)
+        mode: 
+            'fft' ('f')   : [极速] 利用 2D-FFT 传播。要求 x_far, y_far 与近场网格完全一致，z_far 可为数组。
+            'numba' ('n') : [灵活] 利用 Numba 积分。允许计算任意坐标点(如沿着Z轴的线)，不受网格限制。
+    '''
+    from tqdm.auto import tqdm
+    
+    x_near, y_near = np.atleast_1d(x_near), np.atleast_1d(y_near)
+    x_far, y_far, z_far = np.atleast_1d(x_far), np.atleast_1d(y_far), np.atleast_1d(z_far)
+
+    Nx, Ny = len(x_near), len(y_near)
+    dx = x_near[1] - x_near[0] if Nx > 1 else 1.0
+    dy = y_near[1] - y_near[0] if Ny > 1 else 1.0
+
+    # ==========================================
+    # 生成空间频率坐标系 (K-space / F-space)
+    # ==========================================
+    # 获取傅里叶频率并移位，使其中心为0
+    fx = np.fft.fftshift(np.fft.fftfreq(Nx, dx))
+    fy = np.fft.fftshift(np.fft.fftfreq(Ny, dy))
+    FX, FY = np.meshgrid(fx, fy, indexing='xy')
+    
+    # 积分面元
+    dfx = fx[1] - fx[0] if Nx > 1 else 1.0
+    dfy = fy[1] - fy[0] if Ny > 1 else 1.0
+    
+    # ==========================================
+    # 计算初始平面的角谱 (2D FFT)
+    # ==========================================
+    # 连续傅里叶变换的离散近似: 需乘以物理面元 dx*dy
+    Ax = np.fft.fftshift(np.fft.fft2(E_near_x)) * (dx * dy)
+    Ay = np.fft.fftshift(np.fft.fft2(E_near_y)) * (dx * dy)
+    
+    # ==========================================
+    # 求解纵向空间频率 fz 和 纵向角谱 Az
+    # ==========================================
+    f_r_sq = FX**2 + FY**2
+    limit_sq = 1 / lamb**2
+    
+    # 区分传播波 (Propagating) 和 倏逝波 (Evanescent)
+    fz = np.where(f_r_sq <= limit_sq, 
+                  np.sqrt(np.maximum(limit_sq - f_r_sq, 0)),        # 传播波
+                  1j * np.sqrt(np.maximum(f_r_sq - limit_sq, 0)))   # 倏逝波 (虚数阻尼)
+    
+    # 防止除以零
+    fz_safe = np.where(np.abs(fz) < 1e-12, 1e-12, fz)
+    
+    # 散度定理 (k·A = 0) 推导出的 Az 分量
+    Az = -(FX * Ax + FY * Ay) / fz_safe
+
+    # ==========================================
+    # 传播计算 (根据模式选择)
+    # ==========================================
+    import warnings
+
+    if mode in ['fft', 'f']:
+        # 检查传入的远场 xy 坐标是否与近场等价
+        is_x_match = (x_far.shape == x_near.shape) and np.allclose(x_far, x_near)
+        is_y_match = (y_far.shape == y_near.shape) and np.allclose(y_far, y_near)
+        
+        if not (is_x_match and is_y_match):
+            warnings.warn(
+                "在 'fft' 模式下, 远场网格必须与近场网格完全相同！\n"
+                "程序已自动忽略您输入的 x_far 和 y_far，将强制输出在近场网格上的计算结果。\n"
+                "如果需要计算特定坐标点（如轴向扫描），请将 mode 设置为 'numba'。", 
+                UserWarning
+            )
+            
+        print("Using ultra-fast FFT mode...")
+        E_far_x = np.zeros((Ny, Nx, len(z_far)), dtype=np.complex128)
+        E_far_y = np.zeros((Ny, Nx, len(z_far)), dtype=np.complex128)
+        E_far_z = np.zeros((Ny, Nx, len(z_far)), dtype=np.complex128)
+        
+        # 对于每一个 Z 截面，直接用逆傅里叶变换 (IFFT) 还原回空间域
+        for i, z in enumerate(tqdm(z_far, desc="FFT Propagating Z-planes")):
+            # 传播传递函数 Transfer Function (H)
+            H = np.exp(1j * 2 * np.pi * fz * z)
+            
+            # 连续逆变换离散化抵消因子: 1/(dx*dy)
+            E_far_x[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Ax * H)) / (dx * dy)
+            E_far_y[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Ay * H)) / (dx * dy)
+            E_far_z[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Az * H)) / (dx * dy)
+            
+        E_tot = np.sqrt(np.abs(E_far_x)**2 + np.abs(E_far_y)**2 + np.abs(E_far_z)**2)
+        return E_tot, E_far_x, E_far_y, E_far_z
+
+    elif mode in ['numba', 'n']:
+        print("Using numba manual inverse-FT mode... (Ideal for arbitrary point/line scanning)")
+        import numba as nb
+        X_far, Y_far, Z_far = np.meshgrid(x_far, y_far, z_far, indexing='ij')
+        
+        shape_orig = X_far.shape
+        X_flat, Y_flat, Z_flat = X_far.ravel(), Y_far.ravel(), Z_far.ravel()
+        E_flat_x = np.zeros_like(X_flat, dtype=np.complex128)
+        E_flat_y = np.zeros_like(X_flat, dtype=np.complex128)
+        E_flat_z = np.zeros_like(X_flat, dtype=np.complex128)
+        
+        # Numba 内核: 将预先用 FFT 算好的角谱，在任意指定空间坐标处积分
+        @nb.njit(parallel=True, fastmath=True)
+        def compute_inverse_integral(xf, yf, zf, fx, fy, Ax, Ay, Az, dfx, dfy):
+            val_x, val_y, val_z = 0j, 0j, 0j
+            Ny, Nx = Ax.shape
+            for ii in nb.prange(Ny):
+                for jj in range(Nx):
+                    f_x, f_y = fx[jj], fy[ii]
+                    f_r_sq = f_x**2 + f_y**2
+                    
+                    if f_r_sq <= 1/lamb**2:
+                        f_z = np.sqrt(1/lamb**2 - f_r_sq)
+                    else:
+                        f_z = 1j * np.sqrt(f_r_sq - 1/lamb**2)
+                        
+                    # 逆向傅里叶相位因子
+                    phase = np.exp(1j * 2 * np.pi * (f_x*xf + f_y*yf + f_z*zf))
+                    
+                    val_x += Ax[ii, jj] * phase * dfx * dfy
+                    val_y += Ay[ii, jj] * phase * dfx * dfy
+                    val_z += Az[ii, jj] * phase * dfx * dfy
+            return val_x, val_y, val_z
+
+        for i in tqdm(range(len(X_flat)), desc="Numba Angular Integration"):
+            vx, vy, vz = compute_inverse_integral(
+                X_flat[i], Y_flat[i], Z_flat[i], 
+                fx, fy, Ax, Ay, Az, dfx, dfy
+            )
+            E_flat_x[i], E_flat_y[i], E_flat_z[i] = vx, vy, vz
+
+        E_far_x = E_flat_x.reshape(shape_orig)
+        E_far_y = E_flat_y.reshape(shape_orig)
+        E_far_z = E_flat_z.reshape(shape_orig)
+        E_tot = np.sqrt(np.abs(E_far_x)**2 + np.abs(E_far_y)**2 + np.abs(E_far_z)**2)
+        
+        return E_tot, E_far_x, E_far_y, E_far_z
+    else:
+        raise ValueError("Invalid mode. Please use 'fft' or 'numba'.")
+
 
 class lumerical:
     def __init__(self, lumerical_path='', version='', config_path=CONFIG_PATH):
