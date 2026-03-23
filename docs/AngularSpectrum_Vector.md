@@ -87,12 +87,31 @@ E_tot_n_xz, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x_plus, E_ne
 ---
 
 <h2 id="2-minus">2. 第二组：负相位传播约定 (-)</h2>
+<p>本组测试采用 <code>software='-'</code>，即空间相位传播项为 exp(-ikz)。为了匹配该约定，超透镜的设计相位必须翻转为正：$\phi = +k \sqrt{x^2 + y^2 + f^2}$。得益于修复后的散度定理相位推导逻辑，正负约定下的矢量电场耦合将严格保持物理能量守恒。</p>
 
 ```python
+# 生成负相位约定下的近场矢量电场 (注意相位正负号翻转)
 phase_minus = k * np.sqrt(X_n**2 + Y_n**2 + f_design**2)
 E_near_x_minus = aperture * np.exp(1j * phase_minus)
-# ... 计算略 (代码见 Python 脚本) ...
+E_near_y_minus = np.zeros_like(E_near_x_minus)
+
+# 1. 显式指定 software='-' 进行 FFT 模式全空间极速计算
+E_tot_f_m, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x_minus, E_near_y_minus, x_n, y_n, z_scan, mode='f', software='-')
+
+# 2. 显式指定 software='-' 使用 Numba 模式针对焦点进行精确切片验证
+E_tot_n_m, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x_minus, E_near_y_minus, x_n, y_n, [actual_f], mode='n', software='-')
 ```
+
+<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 30px;">
+    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
+        <img src="./pics/AS_vector_minus_fft_XY.jpg" alt="负约定 XY焦平面" style="width: 100%; border-radius: 4px;">
+        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1a:</b> 负约定下 FFT 焦平面分布。结果不受数学符号干扰。</p>
+    </div>
+    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
+        <img src="./pics/AS_vector_minus_fft_XZ.jpg" alt="负约定 XZ平面" style="width: 100%; border-radius: 4px;">
+        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1b:</b> 负约定下 FFT XZ 传播截面。相位流向已正确映射回实际物理空间。</p>
+    </div>
+</div>
 
 ---
 
