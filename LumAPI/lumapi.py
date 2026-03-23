@@ -627,8 +627,9 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
     # 计算初始平面的角谱 (2D FFT)
     # ==========================================
     # 连续傅里叶变换的离散近似: 需乘以物理面元 dx*dy
-    Ax = np.fft.fftshift(np.fft.fft2(E_near_x)) * (dx * dy)
-    Ay = np.fft.fftshift(np.fft.fft2(E_near_y)) * (dx * dy)
+    # 必须先用 ifftshift 将物理坐标原点平移到矩阵左上角，再做 FFT，最后再用 fftshift 将低频移回中心。
+    Ax = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(E_near_x))) * (dx * dy)
+    Ay = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(E_near_y))) * (dx * dy)
     
     # ==========================================
     # 求解纵向空间频率 fz 和 纵向角谱 Az
@@ -642,8 +643,10 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
     fz_imag = np.where(f_r_sq > limit_sq, np.sqrt(np.maximum(f_r_sq - limit_sq, 0)), 0.0)
     
     # 组合为复数供 Ez 计算使用
-    fz = fz_real + 1j * fz_imag
-    fz_safe = np.where(np.abs(fz) < 1e-12, 1e-12, fz)
+    # 无论正负约定，传播方向均向着 +z。
+    # 对于 sg=1, kz = fz_real + i*fz_imag; 对于 sg=-1, kz = fz_real - i*fz_imag
+    fz_eff = fz_real + sg * 1j * fz_imag
+    fz_safe = np.where(np.abs(fz_eff) < 1e-12, 1e-12, fz_eff)
     
     # 散度定理 (k·A = 0) 推导出的 Az 分量
     # 散度定理修正: 高斯定理在两套约定中会导致正负号切换
@@ -677,9 +680,9 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
             H = np.exp(sg * 1j * 2 * np.pi * fz_real * z) * np.exp(-2 * np.pi * fz_imag * z)
             
             # 连续逆变换离散化抵消因子: 1/(dx*dy)
-            E_far_x[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Ax * H)) / (dx * dy)
-            E_far_y[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Ay * H)) / (dx * dy)
-            E_far_z[:, :, i] = np.fft.ifft2(np.fft.ifftshift(Az * H)) / (dx * dy)
+            E_far_x[:, :, i] = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(Ax * H))) / (dx * dy)
+            E_far_y[:, :, i] = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(Ay * H))) / (dx * dy)
+            E_far_z[:, :, i] = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(Az * H))) / (dx * dy)
             
         E_total = np.sqrt(np.abs(E_far_x)**2 + np.abs(E_far_y)**2 + np.abs(E_far_z)**2)
         return E_total, E_far_x, E_far_y, E_far_z
