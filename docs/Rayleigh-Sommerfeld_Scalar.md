@@ -77,20 +77,24 @@ E_xy = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_f_scan, x_f_scan
 E_xz = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_xz_scan, 0.0, z_scan, mode='n', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_numba_Z.jpg" alt="Z轴分布" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1a:</b> Z轴分布。精确吻合设计焦距 50 μm。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_numba_XY.jpg" alt="XY焦平面" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1b:</b> 焦平面分布。呈现完美的圆形 Airy 斑。</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_scalar_plus_numba_XZ.jpg" alt="XZ平面全景" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1c:</b> XZ 传播截面。清晰展示光束的聚焦沙漏形态。</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_numba_Z.jpg" alt="Z轴分布" width="300"><br>
+      <sup><b>图 1.1a:</b> Z轴分布。精确吻合设计焦距 50 μm。</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_numba_XY.jpg" alt="XY焦平面" width="300"><br>
+      <sup><b>图 1.1b:</b> 焦平面分布。呈现完美的圆形 Airy 斑。</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_scalar_plus_numba_XZ.jpg" alt="XZ平面全景" width="600"><br>
+      <sup><b>图 1.1c:</b> XZ 传播截面。清晰展示光束的聚焦沙漏形态。</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="12-vectorized">1.2 Vectorized 矢量化模式 (mode='v')</h3>
@@ -102,20 +106,24 @@ E_xy_v = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_f_scan, x_f_sc
 E_xz_v = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_xz_scan, 0.0, z_scan, mode='v', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_vectorized_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_vectorized_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_scalar_plus_vectorized_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_vectorized_Z.jpg" width="300"><br>
+      <sup><b>图 1.2a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_vectorized_XY.jpg" width="300"><br>
+      <sup><b>图 1.2b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_scalar_plus_vectorized_XZ.jpg" width="600"><br>
+      <sup><b>图 1.2c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="13-threaded">1.3 Threaded 多线程模式 (mode='t')</h3>
@@ -127,20 +135,24 @@ E_xy_t = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_f_scan, x_f_sc
 E_xz_t = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_xz_scan, 0.0, z_scan, mode='t', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_threaded_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_threaded_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_scalar_plus_threaded_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_threaded_Z.jpg" width="300"><br>
+      <sup><b>图 1.3a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_threaded_XY.jpg" width="300"><br>
+      <sup><b>图 1.3b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_scalar_plus_threaded_XZ.jpg" width="600"><br>
+      <sup><b>图 1.3c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="14-common">1.4 Common 普通循环模式 (mode='c')</h3>
@@ -152,20 +164,24 @@ E_xy_c = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_f_scan, x_f_sc
 E_xz_c = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_plus, x_xz_scan, 0.0, z_scan, mode='c', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_common_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_plus_common_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_scalar_plus_common_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_common_Z.jpg" width="300"><br>
+      <sup><b>图 1.4a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_scalar_plus_common_XY.jpg" width="300"><br>
+      <sup><b>图 1.4b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_scalar_plus_common_XZ.jpg" width="600"><br>
+      <sup><b>图 1.4c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -183,20 +199,24 @@ E_xy_m = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_minus, x_f_scan, x_f_s
 E_xz_m = RayleighSommerfeld_Scalar(lamb, x_n, y_n, E_near_minus, x_xz_scan, 0.0, z_scan, mode='n', software='-')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_minus_numba_Z.jpg" alt="负约定 Z轴" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1a:</b> 负约定 Z 轴光强。与图 1.1a 分布完全相同。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_minus_numba_XY.jpg" alt="负约定 XY" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1b:</b> 负约定焦平面分布。物理结果不受数学符号干扰。</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_scalar_minus_numba_XZ.jpg" alt="负约定 XZ" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1c:</b> 负约定 XZ 传播截面。相位流向已正确映射回实际物理空间。</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_minus_numba_Z.jpg" alt="负约定 Z轴" width="300"><br>
+      <sup><b>图 2.1a:</b> 负约定 Z 轴光强。与图 1.1a 分布完全相同。</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_scalar_minus_numba_XY.jpg" alt="负约定 XY" width="300"><br>
+      <sup><b>图 2.1b:</b> 负约定焦平面分布。物理结果不受数学符号干扰。</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_scalar_minus_numba_XZ.jpg" alt="负约定 XZ" width="600"><br>
+      <sup><b>图 2.1c:</b> 负约定 XZ 传播截面。相位流向已正确映射回实际物理空间。</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -213,65 +233,62 @@ I_xz_c = np.abs(E_xz_c[:, 0, :])**2
 # ... (相关差值计算见 Python 脚本)
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 10px; margin-bottom: 30px;">
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_diff_numba_c_XY.jpg" alt="Numba vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_scalar_diff_numba_c_XZ.jpg" alt="Numba vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Numba - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 1.0004e-11, 平均差值: 2.4672e-14</li>
-                <li>XZ 最大差值: 9.2086e-12, 平均差值: 2.0479e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1a: Numba 模式绝对差值</p>
-        </div>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_diff_vectorized_c_XY.jpg" alt="Vectorized vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_scalar_diff_vectorized_c_XZ.jpg" alt="Vectorized vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Vectorized - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 1.1482e-11, 平均差值: 2.7307e-14</li>
-                <li>XZ 最大差值: 9.2086e-12, 平均差值: 2.1225e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1b: 矢量化模式绝对差值</p>
-        </div>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_diff_threaded_c_XY.jpg" alt="Threaded vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_scalar_diff_threaded_c_XZ.jpg" alt="Threaded vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Threaded - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 1.1823e-11, 平均差值: 2.6729e-14</li>
-                <li>XZ 最大差值: 9.5497e-12, 平均差值: 2.1352e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1c: 多线程模式绝对差值</p>
-        </div>
-    </div>
-</div>
+<table align="center" width="100%">
+  <tr>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_scalar_diff_numba_c_XY.jpg" alt="Numba vs Common XY" width="100%"><br>
+      <img src="./pics/RS_scalar_diff_numba_c_XZ.jpg" alt="Numba vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Numba - Common</b><br>
+        <sup>XY 最大差值: 1.0004e-11, 平均差值: 2.4672e-14<br>
+        XZ 最大差值: 9.2086e-12, 平均差值: 2.0479e-14</sup>
+      </div>
+      <sup><b>图 3.1a:</b> Numba 模式绝对差值</sup>
+    </td>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_scalar_diff_vectorized_c_XY.jpg" alt="Vectorized vs Common XY" width="100%"><br>
+      <img src="./pics/RS_scalar_diff_vectorized_c_XZ.jpg" alt="Vectorized vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Vectorized - Common</b><br>
+        <sup>XY 最大差值: 1.1482e-11, 平均差值: 2.7307e-14<br>
+        XZ 最大差值: 9.2086e-12, 平均差值: 2.1225e-14</sup>
+      </div>
+      <sup><b>图 3.1b:</b> 矢量化模式绝对差值</sup>
+    </td>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_scalar_diff_threaded_c_XY.jpg" alt="Threaded vs Common XY" width="100%"><br>
+      <img src="./pics/RS_scalar_diff_threaded_c_XZ.jpg" alt="Threaded vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Threaded - Common</b><br>
+        <sup>XY 最大差值: 1.1823e-11, 平均差值: 2.6729e-14<br>
+        XZ 最大差值: 9.5497e-12, 平均差值: 2.1352e-14</sup>
+      </div>
+      <sup><b>图 3.1c:</b> 多线程模式绝对差值</sup>
+    </td>
+  </tr>
+</table>
 
 <h3 id="32-phase-diff">3.2 不同相位约定差值分析</h3>
 <p>下图展示了在 Numba 模式下，采用正相位约定 <code>software='+'</code> 与负相位约定 <code>software='-'</code> 得到的光强分布的绝对差值。这证明了即使复数电场虚部的演化方向完全相反，算法仍能正确保证物理标量场能量的绝对一致性。</p>
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333; text-align: left;">
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 7.1623e-12, 平均差值: 1.6898e-14</li>
-            </ul>
-        </div>
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 3.2a:</b> 负约定 - 正约定 (XY平面)</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_scalar_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333; text-align: left;">
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XZ 最大差值: 9.7771e-12, 平均差值: 1.2292e-14</li>
-            </ul>
-        </div>
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 3.2b:</b> 负约定 - 正约定 (XZ全景传播截面)</p>
-    </div>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" width="400">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_scalar_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" width="400">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div align="left" style="display:inline-block;">
+        <sup>XY 平面最大差值: 7.1623e-12, 平均差值: 1.6898e-14<br>
+        XZ 截面最大差值: 9.7771e-12, 平均差值: 1.2292e-14</sup>
+      </div><br>
+      <sup><b>图 3.2:</b> 负约定 - 正约定绝对差值 (上: XY平面, 下: XZ全景传播截面)</sup>
+    </td>
+  </tr>
+</table>

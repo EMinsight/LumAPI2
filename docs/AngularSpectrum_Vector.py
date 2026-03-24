@@ -49,42 +49,99 @@ def run_as_vector_validation():
         E_near_x = aperture * np.exp(1j * phase)
         E_near_y = np.zeros_like(E_near_x)
         
-        # --- 1. FFT 模式全空间一次性求解 ---
+        # ===================================================
+        # 1. FFT 模式全空间一次性求解
+        # ===================================================
         print("  -> 运行 FFT 模式 (极速3D计算)...")
         E_tot_f, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, x_n, y_n, z_scan, mode='f', software=software)
         
-        I_z_axis = E_tot_f[Ny//2, Nx//2, :]**2
-        actual_f_idx = np.argmax(I_z_axis)
-        actual_f = z_scan[actual_f_idx]
+        # (1) Z 轴扫描 (找到真实焦平面 actual_f)
+        I_z_axis_f = E_tot_f[Ny//2, Nx//2, :]**2
+        actual_f_idx_f = np.argmax(I_z_axis_f)
+        actual_f_f = z_scan[actual_f_idx_f]
         
-        I_xy_f = E_tot_f[:, :, actual_f_idx]**2   # 形状: (Ny, Nx)
-        I_xz_f = E_tot_f[Ny//2, :, :]**2          # 形状: (Nx, Nz)
+        plt.figure(figsize=(5, 4))
+        plt.plot(z_scan*1e6, I_z_axis_f, 'b-', linewidth=2)
+        plt.axvline(f_design*1e6, color='r', linestyle='--', label=f'Design ({f_design*1e6} μm)')
+        plt.axvline(actual_f_f*1e6, color='g', linestyle=':', label=f'Actual ({actual_f_f*1e6:.1f} μm)')
+        plt.title(f"Z-axis Vector Intensity ({software} | fft)")
+        plt.xlabel("Z (μm)"); plt.ylabel("Intensity")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_fft_Z.jpg', dpi=150)
+        plt.close()
+
+        # (2) XY 焦平面扫描
+        I_xy_f = E_tot_f[:, :, actual_f_idx_f]**2   # FFT返回值形状: (Ny, Nx)
         
-        # 仅绘制正约定的 FFT 示意图
-        if software == '+':
-            plt.figure(figsize=(5, 4))
-            plt.imshow(I_xy_f, extent=[x_n[0]*1e6, x_n[-1]*1e6, y_n[0]*1e6, y_n[-1]*1e6], cmap='hot', origin='lower')
-            plt.title("FFT Focal Plane XY")
-            plt.colorbar(); plt.tight_layout()
-            plt.savefig('pics/AS_vector_plus_fft_XY.jpg', dpi=150); plt.close()
-            
-            plt.figure(figsize=(10, 2.5))
-            plt.imshow(I_xz_f, extent=[z_scan[0]*1e6, z_scan[-1]*1e6, x_n[0]*1e6, x_n[-1]*1e6], cmap='jet', aspect='auto', origin='lower')
-            plt.title("FFT XZ Propagation Plane")
-            plt.colorbar(); plt.tight_layout()
-            plt.savefig('pics/AS_vector_plus_fft_XZ.jpg', dpi=200); plt.close()
+        plt.figure(figsize=(5, 4))
+        plt.imshow(I_xy_f, extent=[x_n[0]*1e6, x_n[-1]*1e6, y_n[0]*1e6, y_n[-1]*1e6], cmap='hot', origin='lower')
+        plt.title(f"Focal Plane XY ({software} | fft)")
+        plt.xlabel("X (μm)"); plt.ylabel("Y (μm)")
+        plt.colorbar(); plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_fft_XY.jpg', dpi=150); plt.close()
+        
+        # (3) XZ 全景扫描
+        I_xz_f = E_tot_f[Ny//2, :, :]**2          # FFT返回值形状: (Nx, Nz)
+
+        plt.figure(figsize=(10, 2.5))
+        plt.imshow(I_xz_f, extent=[z_scan[0]*1e6, z_scan[-1]*1e6, x_n[0]*1e6, x_n[-1]*1e6], cmap='jet', aspect='auto', origin='lower')
+        plt.axvline(f_design*1e6, color='w', linestyle='--', alpha=0.5)
+        plt.title(f"XZ Propagation Plane ({software} | fft)")
+        plt.xlabel("Z (μm)"); plt.ylabel("X (μm)")
+        plt.colorbar(); plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_fft_XZ.jpg', dpi=200); plt.close()
 
         # 缓存 FFT 结果
         field_results[(software, 'fft')] = {'I_xy': I_xy_f, 'I_xz': I_xz_f}
 
-        # --- 2. Numba 模式针对性切片计算 ---
+
+        # ===================================================
+        # 2. Numba 模式针对性切片计算
+        # ===================================================
         print("  -> 运行 Numba 模式 (精确坐标反演积分)...")
+        # (1) Z 轴扫描 
+        E_tot_n_z, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, [0.0], [0.0], z_scan, mode='n', software=software)
+        I_z_axis_n = E_tot_n_z[0, 0, :]**2
+        actual_f_n = z_scan[np.argmax(I_z_axis_n)]
+
+        plt.figure(figsize=(5, 4))
+        plt.plot(z_scan*1e6, I_z_axis_n, 'b-', linewidth=2)
+        plt.axvline(f_design*1e6, color='r', linestyle='--', label=f'Design ({f_design*1e6} μm)')
+        plt.axvline(actual_f_n*1e6, color='g', linestyle=':', label=f'Actual ({actual_f_n*1e6:.1f} μm)')
+        plt.title(f"Z-axis Vector Intensity ({software} | numba)")
+        plt.xlabel("Z (μm)"); plt.ylabel("Intensity")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_numba_Z.jpg', dpi=150)
+        plt.close()
+
+        # (2) XY 焦平面扫描
         # 注意: x_far=x_n, y_far=y_n 返回的网格顺序为 (Nx, Ny)
-        E_tot_n_xy, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, x_n, y_n, [actual_f], mode='n', software=software)
-        I_xy_n = E_tot_n_xy[:, :, 0]**2 # (Nx, Ny)
+        E_tot_n_xy, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, x_n, y_n, [actual_f_n], mode='n', software=software)
+        I_xy_n = E_tot_n_xy[:, :, 0]**2 
+
+        plt.figure(figsize=(5, 4))
+        # Numba数据转置匹配绘图维度
+        plt.imshow(I_xy_n.T, extent=[x_n[0]*1e6, x_n[-1]*1e6, y_n[0]*1e6, y_n[-1]*1e6], cmap='hot', origin='lower')
+        plt.title(f"Focal Plane XY ({software} | numba)")
+        plt.xlabel("X (μm)"); plt.ylabel("Y (μm)")
+        plt.colorbar(); plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_numba_XY.jpg', dpi=150); plt.close()
         
+        # (3) XZ 全景扫描
         E_tot_n_xz, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, x_n, [0.0], z_scan, mode='n', software=software)
         I_xz_n = E_tot_n_xz[:, 0, :]**2 # (Nx, Nz)
+
+        plt.figure(figsize=(10, 2.5))
+        plt.imshow(I_xz_n, extent=[z_scan[0]*1e6, z_scan[-1]*1e6, x_n[0]*1e6, x_n[-1]*1e6], cmap='jet', aspect='auto', origin='lower')
+        plt.axvline(f_design*1e6, color='w', linestyle='--', alpha=0.5)
+        plt.title(f"XZ Propagation Plane ({software} | numba)")
+        plt.xlabel("Z (μm)"); plt.ylabel("X (μm)")
+        plt.colorbar(); plt.tight_layout()
+        plt.savefig(f'pics/AS_vector_{fn_sg}_numba_XZ.jpg', dpi=200); plt.close()
         
         field_results[(software, 'numba')] = {'I_xy': I_xy_n, 'I_xz': I_xz_n}
 
@@ -136,7 +193,10 @@ def run_as_feature_analysis():
     E_near_x = aperture * np.exp(1j * phase)
     E_near_y = np.zeros_like(E_near_x)
     
-    actual_f = 48e-6 # 近似焦距 (此处直接赋值加速)
+    # 快速扫描以找到高分辨作图所需的准确焦距 (Z)
+    z_scan_fast = np.linspace(40e-6, 60e-6, 100)
+    E_tot_z, _, _, _ = AngularSpectrum_Vector(lamb, x_n, y_n, E_near_x, E_near_y, [0.0], [0.0], z_scan_fast, mode='n', software='+')
+    actual_f = z_scan_fast[np.argmax(E_tot_z[0, 0, :]**2)]
 
     # 在焦平面上进行局部高分辨率扫描 (提取核心 ±4 μm)
     x_f_zoom = np.linspace(-4e-6, 4e-6, 120)
@@ -167,11 +227,6 @@ def run_as_feature_analysis():
 
 if __name__ == "__main__":
     print("1: 运行角谱法全量模式验证与误差分析 (FFT vs Numba)")
+    run_as_vector_validation()
     print("2: 仅运行局部焦点无级变焦分析 (高 NA 偏振耦合展现)")
-    
-    choice = '1'  # 更改此处以执行不同任务。建议先运行 1，再运行 2。
-    
-    if choice == '1':
-        run_as_vector_validation()
-    elif choice == '2':
-        run_as_feature_analysis()
+    run_as_feature_analysis()

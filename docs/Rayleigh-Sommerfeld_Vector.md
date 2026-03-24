@@ -79,20 +79,24 @@ E_tot_xy, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E_n
 E_tot_xz, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E_near_y_plus, x_xz_scan, 0.0, z_scan, mode='n', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_numba_Z.jpg" alt="Z轴分布" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1a:</b> Z轴分布。准确聚焦于 50 μm 附近。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_numba_XY.jpg" alt="XY焦平面" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1b:</b> 焦平面分布。呈现矢量衍射下的光斑特性。</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_vector_plus_numba_XZ.jpg" alt="XZ平面全景" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.1c:</b> XZ 传播截面。矢量场在传播过程中的聚焦沙漏形态。</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_numba_Z.jpg" alt="Z轴分布" width="300"><br>
+      <sup><b>图 1.1a:</b> Z轴分布。准确聚焦于 50 μm 附近。</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_numba_XY.jpg" alt="XY焦平面" width="300"><br>
+      <sup><b>图 1.1b:</b> 焦平面分布。呈现矢量衍射下的光斑特性。</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_vector_plus_numba_XZ.jpg" alt="XZ平面全景" width="600"><br>
+      <sup><b>图 1.1c:</b> XZ 传播截面。矢量场在传播过程中的聚焦沙漏形态。</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="12-vectorized">1.2 Vectorized 矢量化模式 (mode='v')</h3>
@@ -104,20 +108,24 @@ E_tot_xy_v, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E
 E_tot_xz_v, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E_near_y_plus, x_xz_scan, 0.0, z_scan, mode='v', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_vectorized_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_vectorized_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_vector_plus_vectorized_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.2c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_vectorized_Z.jpg" alt="Z轴分布" width="300"><br>
+      <sup><b>图 1.2a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_vectorized_XY.jpg" alt="XY焦平面" width="300"><br>
+      <sup><b>图 1.2b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_vector_plus_vectorized_XZ.jpg" alt="XZ平面全景" width="600"><br>
+      <sup><b>图 1.2c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="13-threaded">1.3 Threaded 多线程模式 (mode='t')</h3>
@@ -129,20 +137,24 @@ E_tot_xy_t, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E
 E_tot_xz_t, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E_near_y_plus, x_xz_scan, 0.0, z_scan, mode='t', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_threaded_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_threaded_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_vector_plus_threaded_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.3c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_threaded_Z.jpg" alt="Z轴分布" width="300"><br>
+      <sup><b>图 1.3a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_threaded_XY.jpg" alt="XY焦平面" width="300"><br>
+      <sup><b>图 1.3b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_vector_plus_threaded_XZ.jpg" alt="XZ平面全景" width="600"><br>
+      <sup><b>图 1.3c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 
 <h3 id="14-common">1.4 Common 普通循环模式 (mode='c')</h3>
@@ -154,20 +166,24 @@ E_tot_xy_c, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E
 E_tot_xz_c, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_plus, E_near_y_plus, x_xz_scan, 0.0, z_scan, mode='c', software='+')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_common_Z.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4a:</b> Z轴分布</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_plus_common_XY.jpg" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4b:</b> 焦平面分布</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_vector_plus_common_XZ.jpg" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 1.4c:</b> XZ 传播截面</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_common_Z.jpg" alt="Z轴分布" width="300"><br>
+      <sup><b>图 1.4a:</b> Z轴分布</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_vector_plus_common_XY.jpg" alt="XY焦平面" width="300"><br>
+      <sup><b>图 1.4b:</b> 焦平面分布</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_vector_plus_common_XZ.jpg" alt="XZ平面全景" width="600"><br>
+      <sup><b>图 1.4c:</b> XZ 传播截面</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -186,20 +202,24 @@ E_tot_xy_m, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_minus, 
 E_tot_xz_m, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_minus, E_near_y_minus, x_xz_scan, 0.0, z_scan, mode='n', software='-')
 ```
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_minus_numba_Z.jpg" alt="负约定 Z轴" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1a:</b> 负约定 Z 轴矢量光强。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_minus_numba_XY.jpg" alt="负约定 XY" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: auto; padding-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1b:</b> 负约定焦平面分布。结果不受数学符号干扰。</p>
-    </div>
-</div>
-<div style="text-align: center; background-color: #ffffff; padding: 15px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 30px;">
-    <img src="./pics/RS_vector_minus_numba_XZ.jpg" alt="负约定 XZ" style="width: 100%; border-radius: 4px;">
-    <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 2.1c:</b> 负约定 XZ 传播截面。</p>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_minus_numba_Z.jpg" alt="负约定 Z轴" width="300"><br>
+      <sup><b>图 2.1a:</b> 负约定 Z 轴矢量光强。</sup>
+    </td>
+    <td align="center">
+      <img src="./pics/RS_vector_minus_numba_XY.jpg" alt="负约定 XY" width="300"><br>
+      <sup><b>图 2.1b:</b> 负约定焦平面分布。结果不受数学符号干扰。</sup>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="./pics/RS_vector_minus_numba_XZ.jpg" alt="负约定 XZ" width="600"><br>
+      <sup><b>图 2.1c:</b> 负约定 XZ 传播截面。</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -209,68 +229,65 @@ E_tot_xz_m, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_minus, 
 <h3 id="31-mode-diff">3.1 不同计算模式差值分析</h3>
 <p>展示了 Numba、Vectorized 和 Threaded 模式与基准 Common 模式计算出的矢量总光强差值。Colorbar 上限统一固定为 <code>1e-10</code>，验证了并行加速对各电场分量计算的精准无误。</p>
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 10px; margin-bottom: 30px;">
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_diff_numba_c_XY.jpg" alt="Numba vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_vector_diff_numba_c_XZ.jpg" alt="Numba vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Numba - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 1.2733e-11, 平均差值: 4.2637e-14</li>
-                <li>XZ 最大差值: 1.5120e-11, 平均差值: 3.2265e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1a: Numba 模式差值</p>
-        </div>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_diff_vectorized_c_XY.jpg" alt="Vectorized vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_vector_diff_vectorized_c_XZ.jpg" alt="Vectorized vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Vectorized - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 8.9813e-12, 平均差值: 3.0170e-14</li>
-                <li>XZ 最大差值: 9.4360e-12, 平均差值: 2.2070e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1b: 矢量化模式差值</p>
-        </div>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_diff_threaded_c_XY.jpg" alt="Threaded vs Common XY" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
-        <img src="./pics/RS_vector_diff_threaded_c_XZ.jpg" alt="Threaded vs Common XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333;">
-            <p style="margin: 0 0 5px 0;"><b>Threaded - Common</b></p>
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 9.5497e-12, 平均差值: 3.0486e-14</li>
-                <li>XZ 最大差值: 9.7771e-12, 平均差值: 2.2102e-14</li>
-            </ul>
-            <p style="margin: 10px 0 0 0; color: #666; text-align: center;">图 3.1c: 多线程模式差值</p>
-        </div>
-    </div>
-</div>
+<table width="100%" align="center">
+  <tr>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_vector_diff_numba_c_XY.jpg" alt="Numba vs Common XY" width="100%"><br>
+      <img src="./pics/RS_vector_diff_numba_c_XZ.jpg" alt="Numba vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Numba - Common</b><br>
+        <sup>XY 最大差值: 1.2733e-11, 平均差值: 4.2637e-14<br>
+        XZ 最大差值: 1.5120e-11, 平均差值: 3.2265e-14</sup>
+      </div>
+      <sup><b>图 3.1a:</b> Numba 模式差值</sup>
+    </td>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_vector_diff_vectorized_c_XY.jpg" alt="Vectorized vs Common XY" width="100%"><br>
+      <img src="./pics/RS_vector_diff_vectorized_c_XZ.jpg" alt="Vectorized vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Vectorized - Common</b><br>
+        <sup>XY 最大差值: 8.9813e-12, 平均差值: 3.0170e-14<br>
+        XZ 最大差值: 9.4360e-12, 平均差值: 2.2070e-14</sup>
+      </div>
+      <sup><b>图 3.1b:</b> 矢量化模式差值</sup>
+    </td>
+    <td width="33%" align="center" valign="bottom">
+      <img src="./pics/RS_vector_diff_threaded_c_XY.jpg" alt="Threaded vs Common XY" width="100%"><br>
+      <img src="./pics/RS_vector_diff_threaded_c_XZ.jpg" alt="Threaded vs Common XZ" width="100%"><br>
+      <div align="left">
+        <b>Threaded - Common</b><br>
+        <sup>XY 最大差值: 9.5497e-12, 平均差值: 3.0486e-14<br>
+        XZ 最大差值: 9.7771e-12, 平均差值: 2.2102e-14</sup>
+      </div>
+      <sup><b>图 3.1c:</b> 多线程模式差值</sup>
+    </td>
+  </tr>
+</table>
 
 <h3 id="32-phase-diff">3.2 不同相位约定差值分析</h3>
 <p>对于矢量衍射，不仅相位演化方向相反，核函数中的矢量耦合项同样依赖于传播方向因子 $sg$。下图证明了算法内部对相位约定的修正完美保证了最终能量场的一致性。</p>
 
-<div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-bottom: 15px;">
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333; text-align: left;">
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XY 最大差值: 1.1141e-11, 平均差值: 3.0913e-14</li>
-            </ul>
-        </div>
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 3.2a:</b> 负约定 - 正约定 (XY平面)</p>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" style="width: 100%; border-radius: 4px;">
-        <div style="margin-top: auto; padding-top: 15px; font-size: 0.85em; color: #333333; text-align: left;">
-            <ul style="margin: 0; padding-left: 15px;">
-                <li>XZ 最大差值: 9.5497e-12, 平均差值: 1.8737e-14</li>
-            </ul>
-        </div>
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 3.2b:</b> 负约定 - 正约定 (XZ截面)</p>
-    </div>
-</div>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" width="400">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./pics/RS_vector_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" width="400">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div align="left" style="display:inline-block;">
+        <sup>XY 平面最大差值: 1.1141e-11, 平均差值: 3.0913e-14<br>
+        XZ 截面最大差值: 9.5497e-12, 平均差值: 1.8737e-14</sup>
+      </div><br>
+      <sup><b>图 3.2:</b> 负约定 - 正约定绝对差值 (上: XY平面, 下: XZ截面)</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -285,17 +302,19 @@ E_tot_xz_m, _, _, _ = RayleighSommerfeld_Vector(lamb, x_n, y_n, E_near_x_minus, 
 
 为了清晰展示这一特性，我们对焦平面中心区域进行了局部高分辨率扫描（范围缩减至 ±4 μm），独立提取并绘制了电场分量的光强分布。
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 30px;">
-    <div style="display: flex; flex-direction: column; width: 32%; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_feature_Ex.jpg" alt="Ex Component" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 4.1a: 主偏振分量 |Ex|²</b><br>占据了绝大部分能量，光斑中心最亮。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; width: 32%; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_feature_Ez.jpg" alt="Ez Component" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 4.1b: 纵向偏振分量 |Ez|²</b><br>沿 X 轴分布的两个强波瓣，高 NA 聚焦的标志。</p>
-    </div>
-    <div style="display: flex; flex-direction: column; width: 32%; text-align: center; background-color: #ffffff; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px;">
-        <img src="./pics/RS_vector_feature_Total.jpg" alt="Total Intensity" style="width: 100%; border-radius: 4px;">
-        <p style="margin-top: 10px; font-size: 0.9em; color: #333333;"><b>图 4.1c: 总光强 |E_total|²</b><br>叠加后，光斑沿 X 轴（偏振方向）略微拉长变宽。</p>
-    </div>
-</div>
+<table width="100%" align="center">
+  <tr>
+    <td width="33%" align="center" valign="top">
+      <img src="./pics/RS_vector_feature_Ex.jpg" alt="Ex Component" width="100%"><br>
+      <sup><b>图 4.1a: 主偏振分量 |Ex|²</b><br>占据了绝大部分能量，光斑中心最亮。</sup>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <img src="./pics/RS_vector_feature_Ez.jpg" alt="Ez Component" width="100%"><br>
+      <sup><b>图 4.1b: 纵向偏振分量 |Ez|²</b><br>沿 X 轴分布的两个强波瓣，高 NA 聚焦的标志。</sup>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <img src="./pics/RS_vector_feature_Total.jpg" alt="Total Intensity" width="100%"><br>
+      <sup><b>图 4.1c: 总光强 |E_total|²</b><br>叠加后，光斑沿 X 轴（偏振方向）略微拉长变宽。</sup>
+    </td>
+  </tr>
+</table>

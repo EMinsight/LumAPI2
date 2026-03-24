@@ -288,12 +288,12 @@ diff_xz_conv = np.abs(I_xz_minus - I_xz_numba)
 <table align="center">
   <tr>
     <td align="center">
-      <img src="./pics/Kirchhoff_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" width="300">
+      <img src="./pics/Kirchhoff_diff_minus_plus_XY.jpg" alt="Minus vs Plus XY" width="400">
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="./pics/Kirchhoff_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" width="300">
+      <img src="./pics/Kirchhoff_diff_minus_plus_XZ.jpg" alt="Minus vs Plus XZ" width="400">
     </td>
   </tr>
   <tr>
