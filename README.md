@@ -1,6 +1,6 @@
 # Lumerical FDTD Python 自用脚本整理
 
-本项目旨在简化 Lumerical FDTD 软件与 Python 环境的交互流程，提供自动化的路径配置工具，并封装了常用的光学仿真后处理算法（如近场至远场变换）。
+本项目旨在简化 Lumerical FDTD 软件与 Python 环境的交互流程，提供自动化的路径配置工具，并封装了matlab数据文件.mat的读取和写入，以及常用的光学仿真后处理算法（如近场至远场变换）。
 
 ## 📖 核心功能
 * **自动化环境配置**：自动识别系统中的 Lumerical 安装路径及版本。
@@ -132,9 +132,35 @@ fdtd.save()
 fdtd.close()
 ```
 
-### 2. 高级算法库：Kirchhoff 衍射积分
-内置高性能的近场-远场变换函数 Kirchhoff，支持多种计算后端以适应不同硬件环境。
+### 2. matlab数据文件.mat的读取和写入
+本库内置了 matlab数据文件.mat的读取和写入功能。默认使用`matlab`的`v7.3`格式，支持`FDTD`的`24R1`以及更高版本的数据读取和写入。
 
+**代码示例：**
+```python
+from LumAPI import savemat, loadmat
+
+# 写入mat文件
+x = np.array([1, 2, 3])
+y = np.array([4, 5, 6])
+E_near = np.array([[1+1j, 2+2j], [3+3j, 4+4j]])
+data = {
+    'x': x,
+    'y': y,
+    'E_near': E_near
+}
+savemat('data.mat', data)
+
+# 读取mat文件
+data_load = loadmat('data.mat')
+x = data_load['x']
+y = data_load['y']
+E_near = data_load['E_near']
+```
+
+### 3. 高级算法库：衍射积分函数
+内置多个高性能的近场-远场变换函数，支持多种计算后端以适应不同硬件环境。
+
+示例：Kirchhoff函数  
 **函数签名：**
 ```python
 def Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba'):
