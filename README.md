@@ -233,3 +233,12 @@ plt.title('Kirchhoff Diffraction Pattern')
 plt.colorbar(label='Intensity')
 plt.show()
 ```
+
+## 许可证
+本库遵循[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)开源许可证
+
+## 联系作者
+ - **作者**: [JaniQuiz](https://github.com/JaniQuiz)  
+ - **邮箱**: janiquiz@163.com
+ - **项目主页**: [LumAPI](https://github.com/JaniQuiz/LumAPI)
+ - **问题反馈**: [GitHub Issues](https://github.com/JaniQuiz/LumAPI/issues)

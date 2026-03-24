@@ -38,11 +38,11 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
             for key, val in data_dict.items():
                 data_array = np.asarray(val)
                 
-                # 1. 自动转置处理
+                # 自动转置处理
                 if auto_transpose and data_array.ndim >= 2:
                     data_array = data_array.T
                 
-                # 2. 核心修复：针对复数的特殊封装
+                # 针对复数的特殊封装
                 if np.iscomplexobj(data_array):
                     # 按照 MATLAB 期望的 HDF5 复合格式构造：字段名必须为 'real' 和 'imag'
                     complex_dt = np.dtype([('real', data_array.real.dtype), 
@@ -1002,7 +1002,6 @@ if __name__ == '__main__':
     S = 0.5*um
     material_base = 'Au (Gold) - CRC'
 
-    lumapi = lumapi()
     fdtd = lumapi.FDTD()
     fdtd.addrect(
         name="base",
