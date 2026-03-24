@@ -89,12 +89,12 @@ def loadmat(filename, auto_transpose=True):
     with open(filename, 'rb') as f:
         header = f.read(8)
     
-    is_v73 = (header == b'\x89HDF\r\n\x1a\n')
+    import h5py
+    is_v73 = h5py.is_hdf5(filename)
 
     data_dict = {}
 
     if is_v73:
-        import h5py
         with h5py.File(filename, 'r') as f:
             for key in f.keys():
                 if not key.startswith('#'): 
