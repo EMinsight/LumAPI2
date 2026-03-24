@@ -9,76 +9,106 @@ import re, platform
 current_dir = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(current_dir, 'config.json')
 
-def detect_version(lumerical_root):
-    """检测Lumerical安装目录下的有效版本号"""
-    try:
-        if not os.path.exists(lumerical_root):
-            return None
-            
-        # 检查是否存在v+三位数字的文件夹
-        for item in os.listdir(lumerical_root):
-            if os.path.isdir(os.path.join(lumerical_root, item)):
-                # 匹配v+三位数字的模式，例如v231, v242
-                if re.match(r'^v\d{3}$', item):
-                    # 验证该目录下是否存在lumapi.py
-                    lumapi_path = os.path.join(lumerical_root, item, "api", "python", "lumapi.py")
-                    if os.path.exists(lumapi_path):
-                        return item
-        return None
-    except Exception:
-        return None
 
-
-def get_lumapi_path(lumerical_root, version):
-    """从Lumerical根路径和版本获取lumapi.py路径"""
-    return os.path.join(lumerical_root, version, "api", "python", "lumapi.py")
-
-
-def validate_path(lumerical_root: str, version: str = None) -> object:
-    """验证Lumerical路径有效性并返回lumapi对象
-    
-    参数:
-    lumerical_root: Lumerical安装根目录
-    version: 版本号（可选），如"v241"
-    
-    返回:
-    lumapi对象或None
+def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
     """
-    try:
-        if not lumerical_root:
-            print("错误：路径不能为空")
-            return None
-            
-        lumerical_root = os.path.abspath(lumerical_root)
-        
-        # 如果没有提供版本号，尝试自动检测
-        if not version:
-            version = detect_version(lumerical_root)
-            if not version:
-                print(f"错误：在指定路径未找到有效的Lumerical版本 (查找路径：{lumerical_root})")
-                return None
-        
-        # 获取lumapi.py的完整路径
-        lumapi_path = get_lumapi_path(lumerical_root, version)
-        
-        if not os.path.exists(lumapi_path):
-            print(f"错误：在指定路径未找到 lumapi.py 文件（查找路径：{lumapi_path}）")
-            return None
-            
-        # 测试导入
-        spec = importlib.util.spec_from_file_location('lumapi', lumapi_path)
-        lumapi = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(lumapi)
+    将字典数据写入 MATLAB .mat 文件。
 
-        if platform.system() == "Windows":
-            # windows系统导入dll目录
-            os.add_dll_directory(lumerical_root)
-        
-        return lumapi
-        
-    except Exception as e:
-        print(f"错误：路径验证失败 - {str(e)}")
-        return None
+    参数 (Parameters):
+    ------------------
+    filename : str
+        输出的 .mat 文件路径和名称。
+    data_dict : dict
+        需要写入的数据字典。
+    version : str, 可选 (默认: 'v7.3')
+        指定写入的 .mat 文件版本格式 ('v7.3' 或 'v7')。
+    auto_transpose : bool, 可选 (默认: True)
+        是否自动处理 Python 和 MATLAB 的跨语言内存主序差异。
+        如果开启，在写入 v7.3(HDF5) 格式时，会自动将多维数组转置，
+        确保 FDTD 或 MATLAB 读入时的维度形状与 Python 中完全一致。
+
+    返回 (Returns):
+    ---------------
+    bool
+        写入成功返回 True。
+    """
+    if version == 'v7.3':
+        import h5py
+        with h5py.File(filename, 'w') as f:
+            for key, val in data_dict.items():
+                data_array = np.asarray(val)
+                
+                # 自动检测与转置：针对 v7.3 格式且为多维数组 (维度 >= 2)
+                if auto_transpose and data_array.ndim >= 2:
+                    data_array = data_array.T
+                    
+                f.create_dataset(key, data=data_array)
+                
+    elif version == 'v7':
+        import scipy.io
+        # scipy.io 内部会自动处理 C-order 和 F-order 的转换，不需要手动转置
+        # 即使开启了 auto_transpose，为了保持形状一致，在此处也不做额外干预
+        scipy.io.savemat(filename, data_dict)
+    else:
+        raise ValueError("不支持的版本格式，请选择 'v7.3' 或 'v7'。")
+    
+    return True
+
+def loadmat(filename, auto_transpose=True):
+    """
+    自动检测版本并读取 MATLAB .mat 文件，支持自动多维数组转置恢复。
+
+    参数 (Parameters):
+    ------------------
+    filename : str
+        需要读取的 .mat 文件路径。
+    auto_transpose : bool, 可选 (默认: True)
+        是否自动处理 Python 和 MATLAB 的跨语言内存主序差异。
+        如果开启，且检测到是 v7.3 格式，会自动将读取到的多维数组转置回
+        MATLAB 中原本的维度顺序。
+
+    返回 (Returns):
+    ---------------
+    dict
+        包含文件中所有变量的字典。
+    """
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"找不到文件: {filename}")
+
+    # 读取魔法字节进行格式检测
+    with open(filename, 'rb') as f:
+        header = f.read(8)
+    
+    is_v73 = (header == b'\x89HDF\r\n\x1a\n')
+
+    data_dict = {}
+
+    if is_v73:
+        import h5py
+        with h5py.File(filename, 'r') as f:
+            for key in f.keys():
+                if not key.startswith('#'): 
+                    data = np.array(f[key])
+                    
+                    # MATLAB 标量处理
+                    if data.shape == (1, 1):
+                        data = data[0, 0]
+                    else:
+                        # 自动检测与转置：针对 v7.3 格式且为多维数组
+                        if auto_transpose and data.ndim >= 2:
+                            data = data.T
+                            
+                    data_dict[key] = data
+    else:
+        import scipy.io
+        mat_data = scipy.io.loadmat(filename)
+        for key, val in mat_data.items():
+            if not key.startswith('__'):
+                if isinstance(val, np.ndarray) and val.shape == (1, 1):
+                    val = val[0, 0]
+                data_dict[key] = val
+
+    return data_dict
 
 
 def create_cmap(color_list, cmap_name="custom_cmap"):
@@ -86,6 +116,7 @@ def create_cmap(color_list, cmap_name="custom_cmap"):
     根据传入的颜色列表创建自定义的渐变色映射
     
     参数:
+    ------------------
     color_list (list): 颜色列表，按顺序定义渐变路径。列表元素支持：
         - 颜色名称 (str): 例如 'black', 'red', 'white'
         - 十六进制色值 (str): 例如 '#000000', '#FF5733', '#FFFFFF'
@@ -95,6 +126,7 @@ def create_cmap(color_list, cmap_name="custom_cmap"):
     cmap_name (str): 生成的 Colorbar 的名称，默认为 "custom_cmap"
     
     返回:
+    ------------------
     LinearSegmentedColormap: 对应的颜色映射对象
     """
     import matplotlib.colors as mcolors
@@ -133,27 +165,28 @@ def Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', s
     基尔霍夫(Kirchhoff) 衍射积分公式
 
     参数: 
-        lamb: 波长
-        x_near, y_near: 近场位置数据，x_near和y_near应当是一维ndarry数组
-        E_near: 近场的电场数据，E_near应当是二维ndarry数组
-        x_far, y_far, z_far: 远场的位置数据，应当是一维数据或者数值
-        mode: 计算模式
-            'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢
-            'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，仅windows下可用，需要joblib库
-            'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存
-            'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**
-        software: 波传播相位约定/来源软件类型
-            '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)
-            '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定
+    ------------------
+    lamb: 波长  
+    x_near, y_near       : 近场位置数据，x_near和y_near应当是一维ndarry数组  
+    E_near               : 近场的电场数据，E_near应当是二维ndarry数组  
+    x_far, y_far, z_far  : 远场的位置数据，应当是一维数据或者数值  
+    mode: 计算模式  
+        'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢  
+        'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，仅windows下可用，需要joblib库  
+        'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存  
+        'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**  
+    software: 波传播相位约定/来源软件类型  
+        '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)  
+        '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定  
 
     返回:
-        E_far: 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))
+        E_far: 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))  
     '''
     from tqdm.auto import tqdm
 
     # 确定相位约定符号
     software = software.upper()
-    if software in ['+', 'FDTD', 'LUMERICAL']:
+    if software in ['+', 'FDTD', 'Lumerical']:
         sg = 1.0
     elif software in ['-', 'COMSOL', 'CST']:
         sg = -1.0
@@ -270,26 +303,28 @@ def RayleighSommerfeld_Scalar(lamb, x_near, y_near, E_near, x_far, y_far, z_far,
     瑞利-索末菲(Rayleigh-Sommerfeld) 标量衍射积分公式
     
     参数: 
-        lamb: 波长
-        x_near, y_near: 近场位置数据，x_near和y_near应当是一维ndarry数组
-        E_near: 近场的电场数据，E_near应当是二维ndarry数组
-        x_far, y_far, z_far: 远场的位置数据，应当是一维数据或者数值
-        mode: 计算模式
-            'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢
-            'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，仅windows下可用，需要joblib库
-            'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存
-            'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**
-        software: 波传播相位约定/来源软件类型
-            '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)
-            '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定
+    ------------------
+    lamb: 波长  
+    x_near, y_near       : 近场位置数据，x_near和y_near应当是一维ndarry数组  
+    E_near               : 近场的电场数据，E_near应当是二维ndarry数组  
+    x_far, y_far, z_far  : 远场的位置数据，应当是一维数据或者数值  
+    mode: 计算模式  
+        'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢  
+        'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，需要joblib库  
+        'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存  
+        'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**  
+    software: 波传播相位约定/来源软件类型  
+        '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)  
+        '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定  
         
     返回:
+    ------------------
         E_far: 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))
     '''
     from tqdm.auto import tqdm
 
     software = software.upper()
-    if software in ['+', 'FDTD', 'LUMERICAL']:
+    if software in ['+', 'FDTD', 'Lumerical']:
         sg = 1.0
     elif software in ['-', 'COMSOL', 'CST']:
         sg = -1.0
@@ -406,27 +441,29 @@ def RayleighSommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y
     瑞利-索末菲(Rayleigh-Sommerfeld) 矢量衍射积分公式
 
     参数: 
-        lamb: 波长
-        x_near, y_near: 近场位置数据，x_near和y_near应当是一维ndarry数组
-        E_near: 近场的电场数据，E_near应当是二维ndarry数组
-        x_far, y_far, z_far: 远场的位置数据，应当是一维数据或者数值
-        mode: 计算模式
-            'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢
-            'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，仅windows下可用，需要joblib库
-            'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存
-            'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**
-        software: 波传播相位约定/来源软件类型
-            '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)
-            '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定
+    ------------------
+    lamb: 波长  
+    x_near, y_near        : 近场位置数据，x_near和y_near应当是一维ndarry数组  
+    E_near                : 近场的电场数据，E_near应当是二维ndarry数组  
+    x_far, y_far, z_far   : 远场的位置数据，应当是一维数据或者数值  
+    mode: 计算模式  
+        'common'('c')     : 普通循环计算模式，兼容所有平台，最稳定，但速度最慢  
+        'threaded'('t')   : 多线程计算模式，能够吃满CPU资源，需要joblib库  
+        'vectorized'('v') : 矢量化计算模式，计算小数据非常快，但大数据会容易爆内存  
+        'numba'('n')      : numba计算模式，计算速度非常快，兼容windows和linux，需要numba库，**推荐使用**  
+    software: 波传播相位约定/来源软件类型
+        '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)
+        '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定
         
     返回:
-        E_total: 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))
-        E_far_x, E_far_y, E_far_z: 远场电场各个分量数据，形状为 (len(x_far), len(y_far), len(z_far))
+    ------------------
+    E_total                   : 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))  
+    E_far_x, E_far_y, E_far_z : 远场电场各个分量数据，形状为 (len(x_far), len(y_far), len(z_far))
     '''
     from tqdm.auto import tqdm
 
     software = software.upper()
-    if software in ['+', 'FDTD', 'LUMERICAL']:
+    if software in ['+', 'FDTD', 'Lumerical']:
         sg = 1.0
     elif software in ['-', 'COMSOL', 'CST']:
         sg = -1.0
@@ -578,26 +615,27 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
     矢量角谱法 (Vector Angular Spectrum) 衍射传播
     
     参数:
-        lamb: 波长
-        x_near, y_near: 近场平面网格坐标 (一维数组)
-        E_near_x, E_near_y: 近场电场横向分量 (二维数组)
-        x_far, y_far, z_far: 远场坐标 (允许为单个数字或一维数组)
-        mode: ('fft' 或 'numba')
-        mode: 计算模式
-            'fft'('f')    : 快速傅里叶变换，计算速度极快，占用计算资源很小，严格要求 x_far, y_far 与近场网格完全一致。
-            'numba'('n')  : 逆傅里叶积分。允许计算任意形状远场，不受限制，占用计算资源较大。
-        software: 'FDTD' (默认) 或 'COMSOL'software: 波传播相位约定/来源软件类型
-            '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)
-            '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定
+    ------------------
+    lamb: 波长  
+    x_near, y_near      : 近场平面网格坐标 (一维数组)  
+    E_near_x, E_near_y  : 近场电场横向分量 (二维数组)  
+    x_far, y_far, z_far : 远场坐标 (允许为单个数字或一维数组)  
+    mode: 计算模式  
+        'fft'('f')    : 快速傅里叶变换，计算速度极快，占用计算资源很小，严格要求 x_far, y_far 与近场网格完全一致。  
+        'numba'('n')  : 逆傅里叶积分。允许计算任意形状远场，不受限制，占用计算资源较大。  
+    software: 'FDTD' (默认) 或 'COMSOL'software: 波传播相位约定/来源软件类型  
+        '+', 'FDTD' 或 'Lumerical' : 采用 exp(+ikz) 相位约定 (默认)  
+        '-', 'COMSOL' 或 'CST'     : 采用 exp(-ikz) 相位约定  
 
-    返回:
-        E_total: 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))
-        E_far_x, E_far_y, E_far_z: 远场电场各个分量数据，形状为 (len(x_far), len(y_far), len(z_far))
+    返回:  
+    ------------------
+    E_total                   : 远场电场数据，形状为 (len(x_far), len(y_far), len(z_far))  
+    E_far_x, E_far_y, E_far_z : 远场电场各个分量数据，形状为 (len(x_far), len(y_far), len(z_far))  
     '''
     from tqdm.auto import tqdm
 
     software = software.upper()
-    if software in ['+', 'FDTD', 'LUMERICAL']:
+    if software in ['+', 'FDTD', 'Lumerical']:
         sg = 1.0
     elif software in ['-', 'COMSOL', 'CST']:
         sg = -1.0
@@ -734,6 +772,75 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
     else:
         raise ValueError("Invalid mode. Please use 'fft' or 'numba'.")
 
+
+def detect_version(lumerical_root):
+    """检测Lumerical安装目录下的有效版本号"""
+    try:
+        if not os.path.exists(lumerical_root):
+            return None
+            
+        # 检查是否存在v+三位数字的文件夹
+        for item in os.listdir(lumerical_root):
+            if os.path.isdir(os.path.join(lumerical_root, item)):
+                # 匹配v+三位数字的模式，例如v231, v242
+                if re.match(r'^v\d{3}$', item):
+                    # 验证该目录下是否存在lumapi.py
+                    lumapi_path = os.path.join(lumerical_root, item, "api", "python", "lumapi.py")
+                    if os.path.exists(lumapi_path):
+                        return item
+        return None
+    except Exception:
+        return None
+
+def get_lumapi_path(lumerical_root, version):
+    """从Lumerical根路径和版本获取lumapi.py路径"""
+    return os.path.join(lumerical_root, version, "api", "python", "lumapi.py")
+
+def validate_path(lumerical_root: str, version: str = None) -> object:
+    """验证Lumerical路径有效性并返回lumapi对象
+    
+    参数:
+    lumerical_root: Lumerical安装根目录
+    version: 版本号（可选），如"v241"
+    
+    返回:
+    lumapi对象或None
+    """
+    try:
+        if not lumerical_root:
+            print("错误：路径不能为空")
+            return None
+            
+        lumerical_root = os.path.abspath(lumerical_root)
+        
+        # 如果没有提供版本号，尝试自动检测
+        if not version:
+            version = detect_version(lumerical_root)
+            if not version:
+                print(f"错误：在指定路径未找到有效的Lumerical版本 (查找路径：{lumerical_root})")
+                return None
+        
+        # 获取lumapi.py的完整路径
+        lumapi_path = get_lumapi_path(lumerical_root, version)
+        
+        if not os.path.exists(lumapi_path):
+            print(f"错误：在指定路径未找到 lumapi.py 文件（查找路径：{lumapi_path}）")
+            return None
+            
+        # 测试导入
+        spec = importlib.util.spec_from_file_location('lumapi', lumapi_path)
+        lumapi = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(lumapi)
+
+        if platform.system() == "Windows":
+            # windows系统导入dll目录
+            os.add_dll_directory(lumerical_root)
+        
+        return lumapi
+        
+    except Exception as e:
+        print(f"错误：路径验证失败 - {str(e)}")
+        return None
 
 class lumerical:
     def __init__(self, lumerical_path='', version='', config_path=CONFIG_PATH):
