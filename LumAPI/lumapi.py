@@ -38,11 +38,21 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
             for key, val in data_dict.items():
                 data_array = np.asarray(val)
                 
-                # 自动检测与转置：针对 v7.3 格式且为多维数组 (维度 >= 2)
+                # 1. 自动转置处理
                 if auto_transpose and data_array.ndim >= 2:
                     data_array = data_array.T
-                    
-                f.create_dataset(key, data=data_array)
+                
+                # 2. 核心修复：针对复数的特殊封装
+                if np.iscomplexobj(data_array):
+                    # 按照 MATLAB 期望的 HDF5 复合格式构造：字段名必须为 'real' 和 'imag'
+                    complex_dt = np.dtype([('real', data_array.real.dtype), 
+                                           ('imag', data_array.imag.dtype)])
+                    mat_complex = np.empty(data_array.shape, dtype=complex_dt)
+                    mat_complex['real'] = data_array.real
+                    mat_complex['imag'] = data_array.imag
+                    f.create_dataset(key, data=mat_complex)
+                else:
+                    f.create_dataset(key, data=data_array)
                 
     elif version == 'v7':
         import scipy.io
@@ -90,13 +100,15 @@ def loadmat(filename, auto_transpose=True):
                 if not key.startswith('#'): 
                     data = np.array(f[key])
                     
-                    # MATLAB 标量处理
-                    if data.shape == (1, 1):
+                    # 检测并还原 MATLAB 的复数结构体
+                    if data.dtype.names is not None and 'real' in data.dtype.names and 'imag' in data.dtype.names:
+                        data = data['real'] + 1j * data['imag']
+                    
+                    # 标量与转置处理
+                    if isinstance(data, np.ndarray) and data.shape == (1, 1):
                         data = data[0, 0]
-                    else:
-                        # 自动检测与转置：针对 v7.3 格式且为多维数组
-                        if auto_transpose and data.ndim >= 2:
-                            data = data.T
+                    elif isinstance(data, np.ndarray) and auto_transpose and data.ndim >= 2:
+                        data = data.T
                             
                     data_dict[key] = data
     else:
