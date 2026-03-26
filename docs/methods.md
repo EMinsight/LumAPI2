@@ -174,7 +174,73 @@ profile_monitor = 'profile'
 
 # 获取近场数据
 fdtd = lumapi.FDTD(filename)
-x_near = 
+x_near = fdtd.getdata(profile_monitor, "x")
+y_near = fdtd.getdata(profile_monitor, "y")
+E_near_x = fdtd.getdata(profile_monitor, "Ex")
+E_near_y = fdtd.getdata(profile_monitor, "Ey")
+E_near_z = fdtd.getdata(profile_monitor, "Ez")
+E_near = np.sqrt(np.abs(E_near_x)**2+np.abs(E_near_y)**2+np.abs(E_near_z)**2)
+fdtd.close()
 
+# 目标远场
+x_para = np.round(np.linspace(-22.5*um, 22.5*um, 450))
+y_para = np.round(np.linspace(-22.5*um, 22.5*um, 450))
+z_para = np.round(np.linspace(0, 400*um, 400))
 ```
+使用numba模式计算任意形状远场
+```python
+# 衍射积分计算远场
+# 计算z轴获取焦距
+x_far = 0
+y_far = 0
+z_far = z_para
+E_far_z = Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='n', software='+')
+# E_far_z = RayleighSommerfeld_Scalar(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', software='+')
+# 注意矢量模式返回结果为多个数据
+# E_far_z, = RayleighSommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+# E_far_z, = AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+E_far_z = np.squeeze(E_far_z)
 
+z_focal = z_far[np.argmax(E_far_z)]
+print("The focal length is: ", z_focal)
+
+# 计算xz平面
+x_far = x_para
+y_far = 0
+z_far = z_para
+E_far_xz = Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='n', software='+')
+# E_far_z = RayleighSommerfeld_Scalar(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', software='+')
+# E_far_z, = RayleighSommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+# E_far_z, = AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+E_far_xz = np.squeeze(E_far_xz)
+
+# 计算xy平面
+x_far = x_para
+y_far = y_para
+z_far = z_focal
+E_far_xy = Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='n', software='+')
+# E_far_z = RayleighSommerfeld_Scalar(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', software='+')
+# E_far_z, = RayleighSommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+# E_far_z, = AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+E_far_xy = np.squeeze(E_far_xy)
+```
+或者通过矢量角谱的fft模式计算全空间
+```python
+x_far = x_near
+y_far = y_near
+z_far = z_para
+E_far, = AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='fft', software='+')
+
+# z轴
+E_far_z = np.abs(E_far[len(x_far)//2,len(y_far)//2,:])
+E_far_z = np.squeeze(E_far_z)
+z_focal = z_far[np.argmax(E_far_z)]
+
+# xz平面
+E_far_xz = np.abs(E_far[:,len(y_far)//2,:])
+E_far_xz = np.squeeze(E_far_xz)
+
+# xy平面
+E_far_xy = np.abs(E_far[:,:,np.argmax(E_far_z)])
+E_far_xy = np.squeeze(E_far_xy)
+```
