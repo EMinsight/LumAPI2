@@ -1,11 +1,57 @@
-## 💻 开发指南
+# 💻 开发指南
+ - [1. 基础 FDTD 调用](#1-基础-fdtd-调用)
+    - [1.1 完全支持原生调用](#11-完全支持原生调用)
+    - [1.2 对原本API的不足进行优化](#12-对原本api的不足进行优化)
+ - [2. matlab数据文件.mat的读取和写入](#2-matlab数据文件mat的读取和写入)
+ - [3. 高级算法库：衍射积分函数](#3-高级算法库衍射积分函数)
+   - [3.1 基尔霍夫衍射积分](#31-kirchhoff函数)
+   - [3.2 瑞利-索末菲标量衍射积分](#32-rayleigh-sommerfeld-标量衍射积分函数)
+   - [3.3 瑞利-索末菲矢量衍射积分](#33-rayleigh-sommerfeld-矢量衍射积分函数)
+   - [3.4 矢量角谱理论衍射积分](#34-angularspectrum-矢量衍射积分函数)
 
-### 1. 基础 FDTD 调用
-本库对原生 API 进行了封装。
 
-* **注意**：原脚本命令中的空格需替换为下划线 `_`。
+## 1. 基础 FDTD 调用
+本程序对原生 API 进行了封装，并对参数进行了优化和改进。
+
+### 1.1 完全支持原生调用
+本程序提供了完全的原生调用方式，支持所有原生 API 函数。
+
+本程序不仅支持`FDTD`的原生调用，还支持`MODE`，`DEVICE`和`INTERCONNECT`的原生调用和优化。
+```python
+def FDTD(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs)
+def MODE(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs)
+def DEVICE(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs)
+def INTERCONNECT(self, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs)
+```
+
+对于`FDTD`中的函数，`Lumerical`的官方库中支持在创建结构时直接传入参数的方式，也支持创建后添加或修改属性。代码示例：
+```python
+um = 1e-6
+material_base = 'Au (Gold) - CRC'
+# 在创建结构时直接传入参数
+fdtd.addrect(
+    name="base",
+    x=0,
+    y=0,
+    x_span=0.4*um,
+    y_span=0.4*um,
+    z_min=-0.3*um,
+    z_max=0,
+    material=material_base
+)
+# 创建完毕后修改属性
+fdtd.set("z min", -0.5*um)
+```
+
+* **注意**：在作为传入参数时，由于传入参数的命名不支持空格，原脚本命令中的空格需替换为下划线 `_`。
     * 例如：`z min` $\rightarrow$ `z_min`
-    * *注：传递给参数的字符串值保持原样，无需修改。*
+    * *注：作为字符串的参数值则保持原样，无需修改。*
+
+您也可以通过`select`和`set`方法选择已经存在的对象来设置属性。
+```python
+fdtd.select('base')
+fdtd.set("z min", -0.5*um)
+```
 
 **代码示例：**
 ```python
@@ -34,11 +80,47 @@ fdtd.addrect(
 fdtd.select('base')
 fdtd.set('z min', -0.5*um) # 字符串参数值保持带空格的原样
 fdtd.save()
-fdtd.close()
+fdtd.close() # 关闭FDTD会话
 ```
 
-### 2. matlab数据文件.mat的读取和写入
-本库内置了 matlab数据文件.mat的读取和写入功能。默认使用`matlab`的`v7.3`格式，支持`FDTD`的`24R1`以及更高版本的数据读取和写入。
+### 1.2 对原本API的不足进行优化
+本程序提供了对 Lumerical 原生 API 的优化，使其更易用。
+
+1. **传入参数自动转化**
+本程序会将你传入参数自动转化为`FDTD`格式。虽然`Lumerical`官方说软件中的数组与python的numpy数组一致，但实际二者并不等价。对于类似`[1, 2, 3]`的数组，在`python`中保存的格式就是`[1, 2, 3]`，而在`FDTD`中，数组会实际保存为`[[1,2,3]]`的格式，因此需要将传入的参数进行修改。本程序将会自动将您传入的参数自动转化为`FDTD`格式，无需担心报错问题。  
+最典型的示例是调用`FDTD`的积分函数`integrate`时，官方给出的案例：
+```matlab
+Py = getdata("Monitor1","Py");
+x = getdata("Monitor1","x");
+y = getdata("Monitor1","y");
+z = getdata("Monitor1","z");
+f = getdata("Monitor1","f");
+power = 0.5 * integrate(real(Py), [1,3], x, z);
+```
+理论上我们使用`python`调用应该是：
+```python
+Py = fdtd.getdata("Monitor1","Py")
+x = fdtd.getdata("Monitor1","x")
+y = fdtd.getdata("Monitor1","y")
+z = fdtd.getdata("Monitor1","z")
+power = 0.5 * fdtd.integrate(np.real(Py), [1,3], x, z)
+```
+实际使用中这样调用会报错，你应该这样编写：
+```python
+Py = fdtd.getdata("Monitor1","Py")
+x = fdtd.getdata("Monitor1","x")
+y = fdtd.getdata("Monitor1","y")
+z = fdtd.getdata("Monitor1","z")
+power = 0.5 * fdtd.integrate(np.real(Py), np.array([[1.0,3.0]]), x, z)
+```
+**使用本程序将无需担心这一点，无论你传入`[1,3]`，还是`[[1,3]]`，亦或者是`np.array([[1,3]])`，本程序都会自动将传入的参数自动转化为符合FDTD要求的格式**
+
+2. **解决整型数据不支持问题**
+本程序会自动将你传入的`int`类型的`numpy`数组转为`float`类型。在`FDTD`中不存在整型数据，即便你定义了`[1,2,3]`，实际在`FDTD`中存储的数组仍然是浮点数`[1.0,2.0,3.0]`。而当你在使用`python`向`FDTD`中传入整型数据时，`FDTD`很显然会报错。
+
+
+## 2. matlab数据文件.mat的读取和写入
+本库内置了`matlab`数据文件`.mat`的读取和写入功能。默认使用`matlab`的`v7.3`格式，支持`FDTD`的`24R1`以及更高版本的数据读取和写入。
 
 **代码示例：**
 ```python
@@ -53,88 +135,138 @@ data = {
     'y': y,
     'E_near': E_near
 }
-savemat('data.mat', data)
+savemat('data.mat', data) # 默认使用v7.3的格式保存
+# savemat('data.mat', data, version='v7.3') # 使用v7.3以后的格式保存
+# savemat('data.mat', data, version='v7') # 使用v7.3以前的格式保存
 
 # 读取mat文件
-data_load = loadmat('data.mat')
+data_load = loadmat('data.mat') # 自动检测两种格式的mat文件，无需设置参数即可读取
 x = data_load['x']
 y = data_load['y']
 E_near = data_load['E_near']
 ```
 
-### 3. 高级算法库：衍射积分函数
-内置多个高性能的近场-远场变换函数，支持多种计算后端以适应不同硬件环境。
+## 3. 高级算法库：衍射积分函数
+内置多个高性能的近场-远场变换函数，支持多种计算后端以适应不同硬件环境。每种算法函数均进行了验证，详见[目录](menu.md)
 
-示例：Kirchhoff函数  
-**函数签名：**
+### 3.1 Kirchhoff函数
+标量基尔霍夫(Kirchhoff)衍射积分函数。
+
 ```python
-def Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba'):
-    """
-    基于标量衍射理论，计算从近场平面到远场空间的电场分布。
-
-    参数:
-        lamb (float): 波长
-        x_near, y_near (1D array): 近场区域的网格坐标
-        E_near (2D array): 近场复振幅电场数据
-        x_far, y_far, z_far (1D array/float): 目标远场区域的坐标
-        mode (str): 计算加速模式
-            - 'numba' ('n'): [推荐] 使用 JIT 编译加速，兼顾速度与跨平台兼容性 (需安装 numba)。
-            - 'threaded' ('t'): 多线程模式，CPU 占用率高 (仅限 Windows，需安装 joblib)。
-            - 'common' ('c'): 纯 Python 实现，最稳定但速度较慢。
-            - 'vectorized' ('v'): 矢量化模式 (实验性，处理大数据时易内存溢出)。
-
-    返回:
-        np.ndarray: 远场电场分布，维度为 (len(x_far), len(y_far), len(z_far))
-    """
+def Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', software='+')
 ```
+**参数说明：**
+- **lamb**: float, 波长
+- **x_near**: 一维ndarray，近场x轴坐标
+- **y_near**: 一维ndarray，近场y轴坐标
+- **E_near**: 二维ndarray，近场电场数据或者近场波函数数据
+- **x_far**: 一维ndarray或者float, 要计算的远场x轴坐标
+- **y_far**: 一维ndarray或者float, 要计算的远场y轴坐标
+- **z_far**: 一维ndarray或者float, 要计算的远场z轴坐标
+- **mode**: str, 计算模式，分别对应不同的计算后端，默认为`numba`。
+   - `numba`, `n`: 使用Numba库将核心计算函数进行编译后运行，速度快，资源占用高，适合大部分情况。
+   - `vectorized`, `v`: 使用numpy库进行矢量化运算，速度很快，内存占用非常高，仅适合小规模数据快速计算。
+   - `threaded`, `t`: 使用joblib库进行多线程进行计算，速度较快，资源占用高。
+   - `common`, `c`: 使用python的`for`循环进行计算，速度慢，资源占用低，仅作为理论基础。
+- **software**: str，传播约定，光传播时的两种不同约定，默认为`+`。
+   - `+`, `FDTD`, `Lumerical`: 光传播约定`kz-wt`，`FDTD`中采用这种传播约定，当使用`FDTD`模拟的近场数据来计算远场时需要使用这种情况。
+   - `-`, `COMSOL`, `CST`: 光传播约定`-kz+wt`，`COMSOL`和`CST`中采用这种传播约定，当使用这几种软件模拟近场来计算远场时需要使用这种情况。
 
-**调用示例：**
+**返回值：**
+- **E_far**: 3维ndarray，远场电场数据或者近场波函数数据，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+
+详细验证报告见[Kirchhoff验证报告](Kirchhoff.md)
+详细调用代码示例参照[Kirchhoff.py](Kirchhoff.py)
+
+### 3.2 Rayleigh-Sommerfeld 标量衍射积分函数
+标量瑞利-索末菲(Rayleigh-Sommerfeld)衍射积分函数。
+
 ```python
-import numpy as np
-import matplotlib.pyplot as plt
-from LumAPI import Kirchhoff
-
-# 1. 定义物理常数与网格
-um = 1e-6
-nm = 1e-9
-lamb = 1 * um
-k = 2 * np.pi / lamb
-p = 700 * nm   # 采样周期
-
-# 2. 构建近场数据 (模拟一个聚焦光场)
-kx, ky = 100, 100
-x_near = np.arange(-kx/2, kx/2) * p
-y_near = np.arange(-ky/2, ky/2) * p
-X, Y = np.meshgrid(x_near, y_near)
-
-focal_length = 20 * um
-# 理想透镜相位调制
-phi = -k / (2 * focal_length) * (X**2 + Y**2)
-# 添加圆形孔径光阑
-mask = (X**2 + Y**2) <= ((kx-20)/2 * p)**2
-phi[~mask] = 0
-E_near = np.zeros_like(X, dtype=complex)
-E_near[mask] = 1.0 * np.exp(1j * phi[mask])
-
-# 3. 定义远场观测区域
-x_far = 0
-y_far = y_near
-z_far = np.arange(0, 40 * um, p) # 沿轴向传播 40um
-
-# 4. 执行衍射计算 (推荐使用 numba 模式)
-E_far = Kirchhoff(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba')
-
-# 5. 可视化结果 (YZ平面光强分布)
-plt.figure(figsize=(10, 6))
-# 注意：E_far 的维度顺序对应 x_far, y_far, z_far
-# 由于 x_far 是标量，我们取切片 [0, :, :] 并转置以适配 imshow (行对应 Z，列对应 Y)
-intensity = np.abs(E_far[0, :, :])**2
-plt.imshow(intensity.T, 
-           extent=[y_far.min()/um, y_far.max()/um, z_far.min()/um, z_far.max()/um],
-           origin='lower', cmap='inferno', aspect='auto')
-plt.xlabel('Y Position (um)')
-plt.ylabel('Z Propagation (um)')
-plt.title('Kirchhoff Diffraction Pattern')
-plt.colorbar(label='Intensity')
-plt.show()
+def RayleighSommerfeld_Scalar(lamb, x_near, y_near, E_near, x_far, y_far, z_far, mode='numba', software='+')
 ```
+**参数说明：**
+- **lamb**: float, 波长
+- **x_near**: 一维ndarray，近场x轴坐标
+- **y_near**: 一维ndarray，近场y轴坐标
+- **E_near**: 二维ndarray，近场电场数据或者波函数数据
+- **x_far**: 一维ndarray或者float, 要计算的远场x轴坐标
+- **y_far**: 一维ndarray或者float, 要计算的远场y轴坐标
+- **z_far**: 一维ndarray或者float, 要计算的远场z轴坐标
+- **mode**: str, 计算模式，分别对应不同的计算后端，默认为`numba`。
+   - `numba`, `n`: 使用Numba库将核心计算函数进行编译后运行，速度快，资源占用高，适合大部分情况。
+   - `vectorized`, `v`: 使用numpy库进行矢量化运算，速度很快，内存占用非常高，仅适合小规模数据快速计算。
+   - `threaded`, `t`: 使用joblib库进行多线程进行计算，速度较快，资源占用高。
+   - `common`, `c`: 使用python的`for`循环进行计算，速度慢，资源占用低，仅作为理论基础。
+- **software**: str，传播约定，光传播时的两种不同约定，默认为`+`。
+   - `+`, `FDTD`, `Lumerical`: 光传播约定`kz-wt`，`FDTD`中采用这种传播约定，当使用`FDTD`模拟的近场数据来计算远场时需要使用这种情况。
+   - `-`, `COMSOL`, `CST`: 光传播约定`-kz+wt`，`COMSOL`和`CST`中采用这种传播约定，当使用这几种软件模拟近场来计算远场时需要使用这种情况。
+
+**返回值：**
+- **E_far**: 3维ndarray，远场电场数据或者近场波函数数据，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+
+详细验证报告见[Rayleigh-Sommerfeld_Scalar验证报告](Rayleigh-Sommerfeld_Scalar.md)
+详细调用代码示例参照[Rayleigh-Sommerfeld_Scalar.py](Rayleigh-Sommerfeld_Scalar.py)
+
+### 3.3 Rayleigh-Sommerfeld 矢量衍射积分函数
+矢量瑞利-索末菲(Rayleigh-Sommerfeld)衍射积分函数。
+
+```python
+def RayleighSommerfeld_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+```
+**参数说明：**
+- **lamb**: float, 波长
+- **x_near**: 一维ndarray，近场x轴坐标
+- **y_near**: 一维ndarray，近场y轴坐标
+- **E_near_x**: 二维ndarray，近场电场数据x分量或者波函数数据x分量
+- **E_near_y**: 二维ndarray，近场电场数据y分量或者波函数数据y分量
+- **x_far**: 一维ndarray或者float, 要计算的远场x轴坐标
+- **y_far**: 一维ndarray或者float, 要计算的远场y轴坐标
+- **z_far**: 一维ndarray或者float, 要计算的远场z轴坐标
+- **mode**: str, 计算模式，分别对应不同的计算后端，默认为`numba`。
+   - `numba`, `n`: 使用Numba库将核心计算函数进行编译后运行，速度快，资源占用高，适合大部分情况。
+   - `vectorized`, `v`: 使用numpy库进行矢量化运算，速度很快，内存占用非常高，仅适合小规模数据快速计算。
+   - `threaded`, `t`: 使用joblib库进行多线程进行计算，速度较快，资源占用高。
+   - `common`, `c`: 使用python的`for`循环进行计算，速度慢，资源占用低，仅作为理论基础。
+- **software**: str，传播约定，光传播时的两种不同约定，默认为`+`。
+   - `+`, `FDTD`, `Lumerical`: 光传播约定`kz-wt`，`FDTD`中采用这种传播约定，当使用`FDTD`模拟的近场数据来计算远场时需要使用这种情况。
+   - `-`, `COMSOL`, `CST`: 光传播约定`-kz+wt`，`COMSOL`和`CST`中采用这种传播约定，当使用这几种软件模拟近场来计算远场时需要使用这种情况。
+
+**返回值：**
+- **E_total**: 3维ndarray，远场电场数据或者近场波函数数据，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_x**: 3维ndarray，远场电场数据或者近场波函数数据x分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_y**: 3维ndarray，远场电场数据或者近场波函数数据y分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_z**: 3维ndarray，远场电场数据或者近场波函数数据z分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+
+详细验证报告见[Rayleigh-Sommerfeld_Vector验证报告](Rayleigh-Sommerfeld_Vector.md)
+详细调用代码示例参照[Rayleigh-Sommerfeld_Vector.py](Rayleigh-Sommerfeld_Vector.py)
+
+### 3.4 AngularSpectrum 矢量衍射积分函数
+矢量角谱(Angular Spectrum)衍射积分函数。
+
+```python
+def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_far, z_far, mode='numba', software='+')
+```
+**参数说明：**
+- **lamb**: float, 波长
+- **x_near**: 一维ndarray，近场x轴坐标
+- **y_near**: 一维ndarray，近场y轴坐标
+- **E_near_x**: 二维ndarray，近场电场数据x分量或者波函数数据x分量
+- **E_near_y**: 二维ndarray，近场电场数据y分量或者波函数数据y分量
+- **x_far**: 一维ndarray或者float, 要计算的远场x轴坐标
+- **y_far**: 一维ndarray或者float, 要计算的远场y轴坐标
+- **z_far**: 一维ndarray或者float, 要计算的远场z轴坐标
+- **mode**: str, 计算模式，分别对应不同的计算后端，默认为`numba`。
+   - `numba`, `n`: 使用Numba库将核心计算函数进行编译后运行，速度快，资源占用高，适合大部分情况。
+   - `fft`, `f`: 使用快速傅里叶变换进行计算，速度极快，资源占用很小，但严格要求 x_far, y_far 与近场网格完全一致，适合快速查看衍射情况。
+- **software**: str，传播约定，光传播时的两种不同约定，默认为`+`。
+   - `+`, `FDTD`, `Lumerical`: 光传播约定`kz-wt`，`FDTD`中采用这种传播约定，当使用`FDTD`模拟的近场数据来计算远场时需要使用这种情况。
+   - `-`, `COMSOL`, `CST`: 光传播约定`-kz+wt`，`COMSOL`和`CST`中采用这种传播约定，当使用这几种软件模拟近场来计算远场时需要使用这种情况。
+
+**返回值：**
+- **E_total**: 3维ndarray，远场电场数据或者近场波函数数据，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_x**: 3维ndarray，远场电场数据或者近场波函数数据x分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_y**: 3维ndarray，远场电场数据或者近场波函数数据y分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+- **E_far_z**: 3维ndarray，远场电场数据或者近场波函数数据z分量，形状为`(x_far.shape, y_far.shape, z_far.shape)`(如果传入为数字，对应的`shape`为`1`)
+
+详细验证报告见[AngularSpectrum_Vector验证报告](AngularSpectrum_Vector.md)
+详细调用代码示例参照[AngularSpectrum_Vector.py](AngularSpectrum_Vector.py)

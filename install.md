@@ -9,7 +9,7 @@
 pip install LumAPI
 ```
 ### 2. 配置lumerical路径
-在安装完库后运行下面的命令即可打开lumerical路径配置页面
+支持图形界面配置和命令行配置两种方式，在安装完库后运行下面的命令即可打开lumerical路径配置页面  
 图形界面配置：
 ```bash
 LumAPI
