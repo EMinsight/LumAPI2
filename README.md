@@ -18,7 +18,8 @@
 为确保我们的衍射积分函数的准确性，我们进行了验证，见[文档目录](docs/menu.md)
 
 ## 💻 使用指南
-见[文档目录](docs/menu.md)
+ - [使用文档](docs/usage.md)
+ - [相关案例](docs/methods.md)
 
 ## 许可证
 本库遵循[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)开源许可证

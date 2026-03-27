@@ -9,6 +9,6 @@
 
 ## 💻 使用指南
 
- - [使用指南](usage.md)
- - [个人使用小技巧](methods.md)
+ - [使用文档](usage.md)
+ - [使用案例](methods.md)
 
