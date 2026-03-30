@@ -32,14 +32,28 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
     bool
         写入成功返回 True。
     """
+    # 预处理字典，将所有整型转换为浮点型
+    processed_dict = {}
+    for key, val in data_dict.items():
+        data_array = np.asarray(val)
+        
+        # 对齐 MATLAB/scipy.io 的底层维度逻辑
+        # 强制将标量(0D)和一维数组(1D)提升为二维矩阵(1x1 或 1xN)
+        data_array = np.atleast_2d(data_array)
+        
+        # 针对 FDTD：将所有整数转为双精度浮点数
+        if np.issubdtype(data_array.dtype, np.integer):
+            data_array = data_array.astype(np.float64)
+            
+        processed_dict[key] = data_array
+
     if version == 'v7.3':
         import h5py
         with h5py.File(filename, 'w') as f:
-            for key, val in data_dict.items():
-                data_array = np.asarray(val)
+            for key, data_array in processed_dict.items():
                 
                 # 自动转置处理
-                if auto_transpose and data_array.ndim >= 2:
+                if auto_transpose:
                     data_array = data_array.T
                 
                 # 针对复数的特殊封装
@@ -57,8 +71,7 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
     elif version == 'v7':
         import scipy.io
         # scipy.io 内部会自动处理 C-order 和 F-order 的转换，不需要手动转置
-        # 即使开启了 auto_transpose，为了保持形状一致，在此处也不做额外干预
-        scipy.io.savemat(filename, data_dict)
+        scipy.io.savemat(filename, processed_dict)
     else:
         raise ValueError("不支持的版本格式，请选择 'v7.3' 或 'v7'。")
     
