@@ -77,9 +77,10 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
     
     return True
 
-def loadmat(filename, auto_transpose=True):
+def loadmat(filename, auto_transpose=True, squeeze_me=True):
     """
-    自动检测版本并读取 MATLAB .mat 文件，支持自动多维数组转置恢复。
+    自动检测版本并读取 MATLAB .mat 文件，支持自动多维数组转置恢复，
+    并自动将数据格式转换为符合 Python 直觉的维度习惯。
 
     参数 (Parameters):
     ------------------
@@ -87,8 +88,10 @@ def loadmat(filename, auto_transpose=True):
         需要读取的 .mat 文件路径。
     auto_transpose : bool, 可选 (默认: True)
         是否自动处理 Python 和 MATLAB 的跨语言内存主序差异。
-        如果开启，且检测到是 v7.3 格式，会自动将读取到的多维数组转置回
-        MATLAB 中原本的维度顺序。
+    squeeze_me : bool, 可选 (默认: True)
+        是否开启数组压缩功能。
+        如果开启，会自动将 MATLAB 中的 1xN 或 Nx1 数组降维为真正的 1D NumPy 数组 (N,)。
+        同时会将 1x1 的矩阵提取为单纯的标量。
 
     返回 (Returns):
     ---------------
@@ -98,11 +101,12 @@ def loadmat(filename, auto_transpose=True):
     if not os.path.exists(filename):
         raise FileNotFoundError(f"找不到文件: {filename}")
 
-    # 读取魔法字节进行格式检测
+    # 读取魔法字节进行初步格式检测
     with open(filename, 'rb') as f:
         header = f.read(8)
     
     import h5py
+    # 判断是否为 v7.3 HDF5 格式
     is_v73 = h5py.is_hdf5(filename)
 
     data_dict = {}
@@ -117,23 +121,42 @@ def loadmat(filename, auto_transpose=True):
                     if data.dtype.names is not None and 'real' in data.dtype.names and 'imag' in data.dtype.names:
                         data = data['real'] + 1j * data['imag']
                     
-                    # 标量与转置处理
-                    if isinstance(data, np.ndarray) and data.shape == (1, 1):
-                        data = data[0, 0]
-                    elif isinstance(data, np.ndarray) and auto_transpose and data.ndim >= 2:
-                        data = data.T
+                    if isinstance(data, np.ndarray):
+                        # 标量与转置处理 (必须在 squeeze 之前转置，恢复实际物理形状)
+                        if auto_transpose and data.ndim >= 2:
+                            data = data.T
+                        
+                        # 维度压缩
+                        if squeeze_me:
+                            # np.squeeze 会自动剥离所有大小为 1 的维度
+                            data = np.squeeze(data)
+                        
+                        # 提取标量处理
+                        if data.ndim == 0:
+                            # 提取 0维 数组为真正的标量值 (但保留 numpy 数据类型)
+                            data = data[()]
+                        elif not squeeze_me and data.shape == (1, 1):
+                            # 如果用户关闭了压缩，但我们依然保持老版本的 1x1 标量提取兜底
+                            data = data[0, 0]
                             
                     data_dict[key] = data
     else:
         import scipy.io
-        mat_data = scipy.io.loadmat(filename)
+        # 对于 scipy，直接利用它内部极其完善的 squeeze_me 参数
+        mat_data = scipy.io.loadmat(filename, squeeze_me=squeeze_me)
         for key, val in mat_data.items():
             if not key.startswith('__'):
-                if isinstance(val, np.ndarray) and val.shape == (1, 1):
-                    val = val[0, 0]
+                if isinstance(val, np.ndarray):
+                    # scipy 在开启 squeeze_me 时，也会把 1x1 变成 0 维数组
+                    if val.ndim == 0:
+                        val = val[()]
+                    # 如果用户关闭了压缩，兜底提取 1x1
+                    elif not squeeze_me and val.shape == (1, 1):
+                        val = val[0, 0]
                 data_dict[key] = val
 
     return data_dict
+
 
 # *****************绘图增强函数******************
 def create_cmap(color_list, cmap_name="custom_cmap"):
@@ -206,6 +229,7 @@ def set_colorbar_range(mappable, vmin, vmax):
     
     # 获取当前的 figure 并请求重新绘制以更新显示
     plt.draw()
+
 
 # *****************近远场变换函数*****************
 def Estimate_focal(lamb, r, focal_theory):
@@ -954,6 +978,7 @@ def AngularSpectrum_Vector(lamb, x_near, y_near, E_near_x, E_near_y, x_far, y_fa
         return E_total, E_far_x, E_far_y, E_far_z
     else:
         raise ValueError("Invalid mode. Please use 'fft' or 'numba'.")
+
 
 # ***************lumerical相关函数***************
 def detect_version(lumerical_root):
