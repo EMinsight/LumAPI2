@@ -131,7 +131,7 @@ power = 0.5 * fdtd.integrate(np.real(Py), np.array([[1.0,3.0]]), x, z)
 **函数签名：**
 ```python
 def savemat(filename, data_dict, version='v7.3', auto_transpose=True)
-def loadmat(filename, auto_transpose=True)
+def loadmat(filename, auto_transpose=True, squeeze_me=True)
 ```
 
 **savemat**
@@ -142,14 +142,15 @@ def loadmat(filename, auto_transpose=True)
 - `version`: str, mat文件格式版本，默认为`v7.3`。
    - `v7.3`: 使用`h5py`库实现mat文件格式保存，通用。
    - `v7`: 使用`scipy`库实现mat文件格式保存，适用于`FDTD`的`24R1`以前的版本。
-- `auto_transpose`: bool, 是否自动转置数据，默认为`True`。
+- `auto_transpose`: bool, 是否自动转置数据，默认为`True`。`python`和`matlab`的数组主序不同，需要进行转置。
 *注：`matlab`数据文件`.mat`的数据保存维度顺序与`python`相反，例如`python`中形状为`(3,2,1)`在`matlab`中为`(1,2,3)`。*
 
 **loadmat**
 
 **参数说明：**
 - `filename`: str, 文件名，包含扩展名。
-- `auto_transpose`: bool, 是否自动转置数据，默认为`True`。
+- `auto_transpose`: bool, 是否自动转置数据，默认为`True`。`python`和`matlab`的数组主序不同，需要进行转置。
+- `squeeze_me`: bool, 是否对数据进行压缩，默认为`True`。对于一维数组和单个数据，`matlab`会自动将其转为`1xN`形状的数组，这里在读取时进行压缩来更符合`python`的习惯。
 
 **返回值：**
 - `data_dict`: dict，键为变量名，值为变量值。
