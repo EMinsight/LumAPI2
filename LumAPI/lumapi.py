@@ -1114,10 +1114,34 @@ class lumerical:
         return INTERCONNECT(self.lumapi, filename, key, hide, serverArgs, remoteArgs, **kwargs)
 
 class LumFuncBase:
-    """Lumerical 功能基类，处理通用的 API 转发和参数预处理"""
-    def __init__(self, target_handle):
-        # 隐藏内部句柄，避免与转发逻辑冲突
-        self._handle = target_handle
+    """Lumerical 功能基类，处理通用的 API 转发、兼容性初始化和参数预处理"""
+    def __init__(self, lumapi_module, product_name, filename=None, key=None, hide=False, serverArgs=None, remoteArgs=None, **kwargs):
+        # 修复 Python 可变默认参数陷阱
+        if serverArgs is None:
+            serverArgs = {}
+        if remoteArgs is None:
+            remoteArgs = {}
+
+        # 动态获取对应的 Lumerical 构造函数 (例如 lumapi_module.FDTD)
+        target_constructor = getattr(lumapi_module, product_name)
+
+        try:
+            # 首先尝试 v24R1 及更新版本的完整参数调用
+            self._handle = target_constructor(
+                filename=filename, key=key, hide=hide, 
+                serverArgs=serverArgs, remoteArgs=remoteArgs, **kwargs
+            )
+        except TypeError as e:
+            # 捕获旧版本不支持 remoteArgs 的错误并降级调用
+            if 'remoteArgs' in str(e) or 'unexpected keyword argument' in str(e):
+                self._handle = target_constructor(
+                    filename=filename, key=key, hide=hide, 
+                    serverArgs=serverArgs, **kwargs
+                )
+            else:
+                raise # 其他 TypeError 原样抛出
+
+        self.filename = filename
 
     def _process_arg(self, arg):
         """
@@ -1126,11 +1150,11 @@ class LumFuncBase:
         2. 一维 ndarray (len > 1) -> 二维 [[...]]
         """
         if isinstance(arg, np.ndarray):
-            # 规则 1: 检查是否为整型数组并转换
+            # 检查是否为整型数组并转换
             if np.issubdtype(arg.dtype, np.integer):
                 arg = arg.astype(float)
             
-            # 规则 2: 检查一维数组且长度不为 1，进行升维
+            # 检查一维数组且长度不为 1，进行升维
             if arg.ndim == 1 and arg.shape[0] != 1:
                 arg = arg[np.newaxis, :]
         return arg
@@ -1167,28 +1191,20 @@ class LumFuncBase:
             pass
     
 class FDTD(LumFuncBase):
-    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
-        handle = lumapi.FDTD(filename, key, hide, serverArgs, remoteArgs, **kwargs)
-        super().__init__(handle)
-        self.filename = filename
+    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs=None, remoteArgs=None, **kwargs):
+        super().__init__(lumapi, 'FDTD', filename, key, hide, serverArgs, remoteArgs, **kwargs)
 
 class MODE(LumFuncBase):
-    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
-        handle = lumapi.MODE(filename, key, hide, serverArgs, remoteArgs, **kwargs)
-        super().__init__(handle)
-        self.filename = filename
+    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs=None, remoteArgs=None, **kwargs):
+        super().__init__(lumapi, 'MODE', filename, key, hide, serverArgs, remoteArgs, **kwargs)
 
 class DEVICE(LumFuncBase):
-    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
-        handle = lumapi.DEVICE(filename, key, hide, serverArgs, remoteArgs, **kwargs)
-        super().__init__(handle)
-        self.filename = filename
+    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs=None, remoteArgs=None, **kwargs):
+        super().__init__(lumapi, 'DEVICE', filename, key, hide, serverArgs, remoteArgs, **kwargs)
 
 class INTERCONNECT(LumFuncBase):
-    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs={}, remoteArgs={}, **kwargs):
-        handle = lumapi.INTERCONNECT(filename, key, hide, serverArgs, remoteArgs, **kwargs)
-        super().__init__(handle)
-        self.filename = filename
+    def __init__(self, lumapi, filename=None, key=None, hide=False, serverArgs=None, remoteArgs=None, **kwargs):
+        super().__init__(lumapi, 'INTERCONNECT', filename, key, hide, serverArgs, remoteArgs, **kwargs)
     
 lumapi = lumerical()
 
