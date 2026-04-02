@@ -115,4 +115,8 @@ lumapi: lumerical
     print(f"完美！已将最终版存根文件生成至: {pyi_path}")
 
 if __name__ == "__main__":
+    # 检测当前文件夹下是否存在LumAPI 文件夹
+    if not os.path.exists("LumAPI") or not os.path.exists("LumAPI/lumapi.py"):
+        print("未在当前文件夹下检测到LumAPI库，请将LumAPI库与本脚本放在同一目录")
+        exit()
     generate_ultimate_stubs()
