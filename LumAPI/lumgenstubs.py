@@ -110,10 +110,22 @@ lumapi: lumerical
     # 5. 保存到 LumAPI 文件夹内
     lumapi_dir = os.path.dirname(os.path.abspath(__file__))
     pyi_path = os.path.join(lumapi_dir, "lumapi.pyi")
-    with open(pyi_path, 'w', encoding='utf-8') as f:
-        f.write(stub_content)
+    
+    # 检测文件是否已经存在
+    if os.path.exists(pyi_path):
+        # 提示用户输入
+        choice = input(f"⚠️ 警告：目标文件 'lumapi.pyi' 已存在！是否覆盖？(输入 y 确认，其他任意键取消): ").strip().lower()
+        if choice != 'y':
+            print("❌ 操作已取消。未修改现有文件。")
+            return  # 直接退出函数，不执行后续保存
 
-    print(f"已将最终版存根文件生成至: {pyi_path}")
+    # 确认覆盖或文件不存在时，执行写入
+    try:
+        with open(pyi_path, 'w', encoding='utf-8') as f:
+            f.write(stub_content)
+        print(f"✅ 完美！已将最终版存根文件成功生成至: {pyi_path}")
+    except Exception as e:
+        print(f"❌ 保存文件时发生错误: {e}")
 
 def main():
     if not lumapi:
