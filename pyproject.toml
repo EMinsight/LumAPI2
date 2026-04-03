@@ -31,6 +31,7 @@ dependencies = [
 [project.scripts]
 LumAPI = "LumAPI.gui:main"
 LumAPI_CLI = "LumAPI.cli:main"
+LumGenStubs = "LumAPI.lumgenstubs:main"
 
 [tool.setuptools]
 # 明确指定只包含名为 LumAPI 的文件夹
@@ -42,7 +43,7 @@ LumAPI = ["*.json"]
 
 # 排除根目录下的旧脚本
 [tool.setuptools.exclude-package-data]
-"*" = ["LumAPI_GUI.py", "LumAPI_CLI.py"]
+"*" = ["LumAPI_GUI.py", "LumAPI_CLI.py", "gener_stubs.py", "test*"]
 
 [project.urls]
 Homepage = "https://github.com/JaniQuiz/LumAPI"
