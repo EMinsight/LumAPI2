@@ -1002,7 +1002,12 @@ def detect_version(lumerical_root):
 
 def get_lumapi_path(lumerical_root, version):
     """从Lumerical根路径和版本获取lumapi.py路径"""
-    return os.path.join(lumerical_root, version, "api", "python", "lumapi.py")
+    base = os.path.join(lumerical_root, version)
+    p1 = os.path.join(base, "Lumerical", "api", "python", "lumapi.py")
+    if os.path.exists(p1): return p1
+    p2 = os.path.join(base, "api", "python", "lumapi.py")
+    if os.path.exists(p2): return p2
+    return None
 
 def validate_path(lumerical_root: str, version: str = None) -> object:
     """验证Lumerical路径有效性并返回lumapi对象
@@ -1031,7 +1036,7 @@ def validate_path(lumerical_root: str, version: str = None) -> object:
         # 获取lumapi.py的完整路径
         lumapi_path = get_lumapi_path(lumerical_root, version)
         
-        if not os.path.exists(lumapi_path):
+        if not lumapi_path:
             print(f"错误：在指定路径未找到 lumapi.py 文件（查找路径：{lumapi_path}）")
             return None
             
