@@ -1,5 +1,8 @@
 name: Build with PyInstaller (Manual only)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   workflow_dispatch:
 
@@ -55,6 +58,7 @@ jobs:
         with:
           name: artifacts-windows
           path: dist/*.exe
+          retention-days: 3
 
   build-linux:
     name: Build Linux (${{ matrix.arch }})
@@ -118,3 +122,4 @@ jobs:
         with:
           name: artifacts-linux-${{ matrix.arch }}
           path: '*.tar.gz'
+          retention-days: 3
