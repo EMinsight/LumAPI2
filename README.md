@@ -31,7 +31,7 @@
  - [矢量角谱(Angular Spectrum)矢量衍射积分函数验证](docs/AngularSpectrum_Vector.md)
 
 ## 📜 许可证
-本库遵循[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)开源许可证
+本仓库遵循[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)开源许可证
 
 ## 📧 联系作者
  - **作者**: [JaniQuiz](https://github.com/JaniQuiz)  
