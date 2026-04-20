@@ -49,7 +49,8 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
 
     if version == 'v7.3':
         import h5py
-        with h5py.File(filename, 'w') as f:
+        # 预留 512 字节的 userblock 空间给 MATLAB 特征头
+        with h5py.File(filename, 'w', userblock_size=512) as f:
             for key, data_array in processed_dict.items():
                 
                 # 自动转置处理
@@ -67,6 +68,22 @@ def savemat(filename, data_dict, version='v7.3', auto_transpose=True):
                     f.create_dataset(key, data=mat_complex)
                 else:
                     f.create_dataset(key, data=data_array)
+
+        # 受限于底层 HDF5 C 语言库的运行机制，wb模式会清空文件，追加a模式会报错，只能先h5py保存后with open打开写入文件头
+        # HDF5 文件写入完成后，以读写模式打开并注入 MATLAB 文件头
+        with open(filename, 'r+b') as f:
+            # 前 116 字节为文本描述，不足部分用空格补齐
+            header_str = 'MATLAB 7.3 MAT-file, created by LumAPI custom script'
+            header_bytes = header_str.encode('ascii').ljust(116, b' ')
+            
+            # 接下来的 8 字节为子系统数据偏移量（全 0 即可）
+            subsys_offset = b'\x00' * 8
+            
+            # 最后 4 字节为版本号和字节序：0x0200 表示 v7.3，'IM' 表示小端序 (Little Endian)
+            version_and_endian = b'\x02\x00IM'
+            
+            f.seek(0)
+            f.write(header_bytes + subsys_offset + version_and_endian)
                 
     elif version == 'v7':
         import scipy.io
