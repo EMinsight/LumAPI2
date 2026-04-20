@@ -177,7 +177,6 @@ def loadmat(filename, auto_transpose=True, squeeze_me=True):
 def save_h5(filename, data_dict, compression=True):
     """
     将字典数据写入标准 HDF5 文件，支持复数处理和压缩。
-    不包含 MATLAB 特征头，确保 Origin 和标准 HDF5 查看器完美兼容。
 
     参数 (Parameters):
     ------------------
@@ -207,17 +206,25 @@ def save_h5(filename, data_dict, compression=True):
                 data = data.astype(np.float64)
             
             # 压缩设置：对于大数据非常有帮助
-            dataset_args = {"compression": "gzip", "compression_opts": 4} if compression else {}
+            dataset_args = {}
+            if compression and data.ndim > 0:
+                dataset_args = {"compression": "gzip", "compression_opts": 4}
             
             if np.iscomplexobj(data):
                 # 采用复合类型存储复数
                 complex_dt = np.dtype([('real', data.real.dtype), ('imag', data.imag.dtype)])
                 mat_complex = np.empty(data.shape, dtype=complex_dt)
-                mat_complex['real'] = data.real
-                mat_complex['imag'] = data.imag
-                f.create_dataset(key, data=mat_complex, **dataset_args)
-                # 添加属性标记这是一个复数，方便后续自动读取
-                f[key].attrs['is_complex'] = 1
+
+                # 兼容 0D 标量复数和多维复数数组的赋值
+                if data.ndim == 0:
+                    mat_complex['real'] = data.real
+                    mat_complex['imag'] = data.imag
+                else:
+                    mat_complex['real'] = data.real
+                    mat_complex['imag'] = data.imag
+                    
+                dset = f.create_dataset(key, data=mat_complex, **dataset_args)
+                dset.attrs['is_complex'] = 1
             else:
                 f.create_dataset(key, data=data, **dataset_args)
                 
